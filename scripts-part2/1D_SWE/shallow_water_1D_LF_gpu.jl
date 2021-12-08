@@ -52,16 +52,21 @@ end
     cuthreads = (BLOCKX, 1)
     cublocks  = (GRIDX,  1)
     size_H1_2, size_u1_2 = size(H,1)-2, size(u,1)-2
+    t_tic = 0.0; niter = 0
     # Time loop
     for it = 0:nt
-	@cuda blocks=cublocks threads=cuthreads compute_H!(H2, H, dt_dx, u, size_H1_2)
-	H, H2 = H2, H # pointer swap
-	H[1]        = H[2]
-	H[end]      = H[end-1]
-	@cuda blocks=cublocks threads=cuthreads compute_U!(u2, u, H, g, dt_dx, size_u1_2)
-	u, u2 = u2, u # pointer swap
+        if (it==11) t_tic = Base.time(); niter = 0 end
+        @cuda blocks=cublocks threads=cuthreads compute_H!(H2, H, dt_dx, u, size_H1_2)
+        synchronize()
+        H, H2 = H2, H # pointer swap
+        H[1]        = H[2]
+        H[end]      = H[end-1]
+        @cuda blocks=cublocks threads=cuthreads compute_U!(u2, u, H, g, dt_dx, size_u1_2)
+        synchronize()
+        u, u2 = u2, u # pointer swap
         u[1]        = -u[2]
         u[end]      = -u[end-1]
+        niter += 1
         if it % nout == 0
             p1=plot(xc, Array(H), xlims=(xc[1], xc[end]), ylims=(0, 10),
                 xlabel="Lx (m)", ylabel="water surface elevation (m)", label="h",
@@ -71,6 +76,11 @@ end
             display(p1)
         end
     end
+    t_toc = Base.time() - t_tic
+    A_eff = (2*2)/1e9*nx*ny*sizeof(Float64)  # Effective main memory access per iteration [GB]
+    t_it  = t_toc/niter                      # Execution time per iteration [s]
+    T_eff = A_eff/t_it                       # Effective memory throughput [GB/s]
+    @printf("Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter)
     return
 end
 
