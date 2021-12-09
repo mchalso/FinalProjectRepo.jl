@@ -6,14 +6,14 @@
 
 using Plots
 
-@views function shallow_water_1D()
+@views function shallow_water_1D(;do_viz=false)
     # Physics
     Lx     = 40.0
     g      = 9.81
     u_max  = 6 #from review of results with very small timesteps
     ttot   = 20.0
     # Numerics
-    nx     = 1028
+    nx     = 1024
     nout   = 100
     # Derived numerics
     dx     = Lx/nx
@@ -39,7 +39,7 @@ using Plots
         u[2:end-1] .= u[2:end-1] .+ 1/2 .* (dudt[1:end-1] .+ dudt[2:end]) .* dt
         u[1]        = -u[2]
         u[end]      = -u[end-1]
-        if it % nout == 0
+        if do_viz && (it % nout == 0)
             p1=plot(xc, H, xlims=(xc[1], xc[end]), ylims=(0, 10),
                 xlabel="Lx (m)", ylabel="water surface elevation (m)", label="h",
                 title="time = $(round(it*dt, sigdigits=3)) s, stability: $(round(maximum(abs.(u))*dt/dx,sigdigits=3)) /1", 
@@ -48,7 +48,7 @@ using Plots
             display(p1)
         end
     end
-    return
+    return H
 end
 
 shallow_water_1D()
