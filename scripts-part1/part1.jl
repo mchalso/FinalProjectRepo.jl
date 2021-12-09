@@ -69,7 +69,8 @@ end
     Hold  = copy(H)
     Rh    = @zeros(nx-2,ny-2,nz-2)
     dHdt  = @zeros(nx-2,ny-2,nz-2)
-    dHdt2 = @zeros(nx-2,ny-2,nz-2)
+    dHdt .= Data.Array([0.0 for ix=1:size(dHdt,1), iy=1:size(dHdt,2), iz=1:size(dHdt,3)])
+    dHdt2 = copy(dHdt)
     size_H1_2, size_H2_2, size_H3_2 = size(H,1)-2, size(H,2)-2, size(H,3)-2
     # Preparation of visualisation
     if do_visu
@@ -102,8 +103,8 @@ end
                         size_H3_2)
                 H, H2 = H2, H
                 dHdt, dHdt2 = dHdt2, dHdt
-                # update_halo!(dHdt2)
-                # update_halo!(H2)
+                update_halo!(H)
+                # TODO: halo necessary for dHdt?
             # end
             iter += 1
             if (iter % nout == 0) err = norm(Rh)/sqrt(length(Rh)) end
