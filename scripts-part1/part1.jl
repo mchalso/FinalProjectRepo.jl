@@ -95,7 +95,7 @@ end
     t = 0.0; it = 0; ittot = 0;
     dmp = 1-29/nx
     while t<ttot
-        if (it==11) t_tic = Base.time(); niter = 0 end
+        if (it==1) t_tic = Base.time(); niter = 0 end
         iter = 0; err = 2*ϵ
 
         while err > ϵ && iter < maxIter
