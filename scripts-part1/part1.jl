@@ -37,12 +37,11 @@ end
     # Physics
     Lx, Ly, Lz  = 10.0, 10.0, 10.0
     D       = 1.0
-    ttot    = 1e0
+    ttot    = 1.0
     # Numerics
     nx, ny, nz  = 32, 32, 32 # number of grid points
     nout    = 10
     ϵ       = 1e-8
-    Delta_t = 0.2
     maxIter = 1e5
     # Derived numerics
     me, dims = init_global_grid(nx, ny, nz)  # Initialization of MPI and more...
@@ -138,14 +137,14 @@ end
 
     # Retrieve the global domain
     nx_v, ny_v, nz_v = (nx-2)*dims[1], (ny-2)*dims[2], (nz-2)*dims[3]
-    @show Xi_g, Yi_g, Zi_g = LinRange(dx+dx/2, Lx-dx-dx/2, nx_v), 
-                       LinRange(dy+dy/2, Ly-dy-dy/2, ny_v),
-                       LinRange(dz+dz/2, Lz-dz-dz/2, nz_v)
     H_v   = zeros(nx_v, ny_v, nz_v) # global array for visu
     H_inn = zeros(nx-2, ny-2, nz-2) # no halo local array for visu
     H_inn .= H[2:end-1,2:end-1,2:end-1]; gather!(H_inn, H_v)
     finalize_global_grid()
-    return H_v, Xi_g
+    # Complete the gaps
+    H_end = zeros(nx,ny,nz)
+    H_end[2:end-1,2:end-1,2:end-1] = H_inn
+    return H_end, xc
 end
 
 #  diffusion_3D(; do_visu=false)
