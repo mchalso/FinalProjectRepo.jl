@@ -18,6 +18,9 @@ macro qx(ix,iy,iz) esc(:( -D_dx*(H[$ix+1,$iy+1,$iz+1] - H[$ix,$iy+1,$iz+1]) )) e
 macro qy(ix,iy,iz) esc(:( -D_dy*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy,$iz+1]) )) end
 macro qz(ix,iy,iz) esc(:( -D_dz*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy+1,$iz]) )) end
 
+# Calculate the l2 norm of a matrix
+norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WORLD)))
+
 @parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, dHdt2, 
        _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
 
@@ -106,7 +109,9 @@ end
                 # TODO: halo necessary for dHdt?
             # end
             iter += 1
-            if (iter % nout == 0) err = norm(Rh)/sqrt(length(Rh)) end
+            if (iter % nout == 0)
+                err = norm_g(Rh)
+            end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
