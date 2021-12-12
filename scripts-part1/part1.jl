@@ -105,8 +105,7 @@ end
                         size_H3_2)
                 H, H2 = H2, H
                 dHdt, dHdt2 = dHdt2, dHdt
-                update_halo!(H)
-                # TODO: halo necessary for dHdt?
+                update_halo!(H#= , dHdt =#)
             # end
             iter += 1
             if (iter % nout == 0)
@@ -123,7 +122,7 @@ end
             if (me==0)
                 fig = Figure(resolution = (1200,1200))
                 ax1 = Axis3(fig[1,1:2], perspectiveness = 0.5, azimuth = (it/nout)*0.2, 
-                        elevation = 0.57, aspect = (1,1,1), title="Diffusion 3D domain")
+                    elevation = 0.57, aspect = (1,1,1), title="Diffusion 3D domain (t=$(round(t*100)/100)s)")
                 ax2 = Axis(fig[2,1], title="z=16 slice")
                 ax3 = Axis(fig[2,2], title="x=16 slice")
                 volume!(ax1, Xi_g, Yi_g, Zi_g, H_v; colormap=:viridis, transparency=true)
