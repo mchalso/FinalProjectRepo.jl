@@ -25,13 +25,25 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
        _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
 
     if (ix<=size_H1_2 && iy<=size_H2_2 && iz<=size_H3_2)
-        dHdt[ix,iy,iz] = dmp * dHdt[ix,iy,iz] + 
+        dHdt[ix,iy,iz] = dmp * dHdt[ix,iy,iz] -
             (H[ix+1,iy+1,iz+1] - Hold[ix+1,iy+1,iz+1]) * _dt - 
                                         ((@qx(ix+1,iy,iz) - @qx(ix,iy,iz))*_dx +
                                          (@qy(ix,iy+1,iz) - @qy(ix,iy,iz))*_dy +
                                          (@qz(ix,iy,iz+1) - @qz(ix,iy,iz))*_dz)
 
         H2[ix+1,iy+1,iz+1] = H[ix+1,iy+1,iz+1] + dtau * dHdt[ix,iy,iz]
+    end
+    return
+end
+
+@parallel_indices (ix,iy,iz) function compute_residual!(Rh, H, Hold, _dt, _dx,
+        _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
+
+    if (ix<=size_H1_2 && iy<=size_H2_2 && iz<=size_H3_2)
+        Rh[ix,iy,iz] = -(H[ix+1,iy+1,iz+1] - Hold[ix+1,iy+1,iz+1]) * _dt -
+                                        ((@qx(ix+1,iy,iz) - @qx(ix,iy,iz))*_dx +
+                                         (@qy(ix,iy+1,iz) - @qy(ix,iy,iz))*_dy +
+                                         (@qz(ix,iy,iz+1) - @qz(ix,iy,iz))*_dz)
     end
     return
 end
@@ -106,6 +118,8 @@ end
             # end
             iter += 1
             if (iter % nout == 0)
+                @parallel compute_residual!(Rh, H, Hold, _dt, _dx, _dy, _dz, D_dx,
+                                            D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
                 err = norm_g(Rh)
             end
         end
