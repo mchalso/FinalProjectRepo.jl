@@ -46,14 +46,19 @@ end
     return
 end
 
-@views function diffusion_3D(; do_visu=false)
+@views function diffusion_3D(;
+        # Physics
+        ttot = 1.0,
+        # Numerics
+        n = 32,
+        nout = 10,
+        # Visualisation
+        do_visu=false)
     # Physics
     Lx, Ly, Lz  = 10.0, 10.0, 10.0
     D       = 1.0
-    ttot    = 1.0
     # Numerics
-    nx, ny, nz  = 32, 32, 32 # number of grid points
-    nout    = 10
+    nx, ny, nz  = n, n, n # number of grid points
     ϵ       = 1e-8
     maxIter = 1e5
     # Derived numerics
