@@ -105,7 +105,7 @@ end
                         size_H3_2)
                 H, H2 = H2, H
                 dHdt, dHdt2 = dHdt2, dHdt
-                update_halo!(H#= , dHdt =#)
+                update_halo!(H)
             # end
             iter += 1
             if (iter % nout == 0)
