@@ -140,7 +140,8 @@ end
                 heatmap!(fig[2,1], Xi_g, Yi_g, H_v[:,:,16]')
                 heatmap!(fig[2,2], Xi_g, Yi_g, H_v[16,:,:]')
                 # Add information
-                save("plots/part-1/plot_$(it/nout).png", fig, px_per_unit = 2)
+                image_num = lpad(it, 3, "0")
+                save("plots/part-1/plot_$(image_num).png", fig, px_per_unit = 2)
             end
         end
     end
