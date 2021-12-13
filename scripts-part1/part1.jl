@@ -21,17 +21,17 @@ macro qz(ix,iy,iz) esc(:( -D_dz*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy+1,$iz]) )) e
 # Calculate the l2 norm of a matrix
 norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WORLD)))
 
-@parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, dHdt2, 
+@parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, 
        _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
 
     if (ix<=size_H1_2 && iy<=size_H2_2 && iz<=size_H3_2)
-        dHdt2[ix,iy,iz] = dmp * dHdt[ix,iy,iz] + 
+        dHdt[ix,iy,iz] = dmp * dHdt[ix,iy,iz] + 
             (H[ix+1,iy+1,iz+1] - Hold[ix+1,iy+1,iz+1]) * _dt - 
                                         ((@qx(ix+1,iy,iz) - @qx(ix,iy,iz))*_dx +
                                          (@qy(ix,iy+1,iz) - @qy(ix,iy,iz))*_dy +
                                          (@qz(ix,iy,iz+1) - @qz(ix,iy,iz))*_dz)
 
-        H2[ix+1,iy+1,iz+1] = H[ix+1,iy+1,iz+1] + dtau * dHdt2[ix,iy,iz]
+        H2[ix+1,iy+1,iz+1] = H[ix+1,iy+1,iz+1] + dtau * dHdt[ix,iy,iz]
     end
     return
 end
@@ -71,8 +71,6 @@ end
     Hold  = copy(H)
     Rh    = @zeros(nx-2,ny-2,nz-2)
     dHdt  = @zeros(nx-2,ny-2,nz-2)
-    dHdt .= Data.Array([0.0 for ix=1:size(dHdt,1), iy=1:size(dHdt,2), iz=1:size(dHdt,3)])
-    dHdt2 = copy(dHdt)
     size_H1_2, size_H2_2, size_H3_2 = size(H,1)-2, size(H,2)-2, size(H,3)-2
     # Preparation of visualisation
     if do_visu
@@ -100,11 +98,10 @@ end
 
         while err > ϵ && iter < maxIter
             # @hide_communication (8, 2) begin
-                @parallel compute_dual_time!(H, H2, Hold, dHdt, dHdt2, _dt, dtau, 
+                @parallel compute_dual_time!(H, H2, Hold, dHdt, _dt, dtau, 
                         _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, 
                         size_H3_2)
                 H, H2 = H2, H
-                dHdt, dHdt2 = dHdt2, dHdt
                 update_halo!(H)
             # end
             iter += 1
