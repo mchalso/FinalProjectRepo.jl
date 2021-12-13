@@ -105,12 +105,12 @@ end
                            LinRange(dz+dz/2, Lz-dz-dz/2, nz_v)
     end
 
-    t_tic = 0.0; niter = 0
+    t_tic = 0.0; niter_1 = 0
     # Time loop
     t = 0.0; it = 0; ittot = 0;
     dmp = 1-29/nx
     while t<ttot
-        if (it==1) t_tic = Base.time(); niter = 0 end
+        if (it==1) t_tic = Base.time(); niter_1 = ittot end
         iter = 0; err = 2*ϵ
 
         while err > ϵ && iter < maxIter
@@ -151,10 +151,11 @@ end
         end
     end
     t_toc = Base.time() - t_tic
-    A_eff = 2/1e9*nx_g()*ny_g()*sizeof(Float64)  # Effective main memory access per iteration [GB]
+    niter = ittot - niter_1
+    A_eff = 5/1e9*nx_g()*ny_g()*nz_g()*sizeof(Float64)  # Effective main memory access per iteration [GB]
     t_it  = t_toc/niter                          # Execution time per iteration [s]
     T_eff = A_eff/t_it                           # Effective memory throughput [GB/s]
-    if (me==0) @printf("Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter) end
+    if (me==0) @printf("Time = %1.5f sec, T_eff = %1.6f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter) end
 
     # Retrieve the global domain
     finalize_global_grid()
