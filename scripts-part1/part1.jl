@@ -140,15 +140,8 @@ end
     if (me==0) @printf("Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter) end
 
     # Retrieve the global domain
-    nx_v, ny_v, nz_v = (nx-2)*dims[1], (ny-2)*dims[2], (nz-2)*dims[3]
-    H_v   = zeros(nx_v, ny_v, nz_v) # global array for visu
-    H_inn = zeros(nx-2, ny-2, nz-2) # no halo local array for visu
-    H_inn .= H[2:end-1,2:end-1,2:end-1]; gather!(H_inn, H_v)
     finalize_global_grid()
-    # Complete the gaps
-    H_end = zeros(nx,ny,nz)
-    H_end[2:end-1,2:end-1,2:end-1] = H_inn
-    return H_end, xc
+    return H, xc
 end
 
 #  diffusion_3D(; do_visu=false)
