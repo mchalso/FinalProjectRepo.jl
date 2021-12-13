@@ -11,8 +11,6 @@ using GLMakie, Makie
 using Printf, ImplicitGlobalGrid
 import MPI
 
-GLMakie.activate!()
-
 # macros to avoid array allocation
 macro qx(ix,iy,iz) esc(:( -D_dx*(H[$ix+1,$iy+1,$iz+1] - H[$ix,$iy+1,$iz+1]) )) end
 macro qy(ix,iy,iz) esc(:( -D_dy*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy,$iz+1]) )) end
@@ -86,6 +84,8 @@ end
     size_H1_2, size_H2_2, size_H3_2 = size(H,1)-2, size(H,2)-2, size(H,3)-2
     # Preparation of visualisation
     if do_visu
+        GLMakie.activate!()
+
         # Create directory if it does not exist
         if (~isdir("plots/part-1")) mkpath("plots/part-1") end
 
