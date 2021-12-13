@@ -16,9 +16,20 @@ macro qx(ix,iy,iz) esc(:( -D_dx*(H[$ix+1,$iy+1,$iz+1] - H[$ix,$iy+1,$iz+1]) )) e
 macro qy(ix,iy,iz) esc(:( -D_dy*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy,$iz+1]) )) end
 macro qz(ix,iy,iz) esc(:( -D_dz*(H[$ix+1,$iy+1,$iz+1] - H[$ix+1,$iy+1,$iz]) )) end
 
-# Calculate the l2 norm of a matrix
+"""
+    norm_g(A)
+
+Computes the l2 norm of `A`, an MPI array.
+"""
 norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WORLD)))
 
+"""
+    compute_dual_time!(H, H2, Hold, dHdt, _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, 
+    D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
+
+ImplicitGlobalGrid kernel that computes a virtual time step of the diffusion 3D
+process.
+"""
 @parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, 
        _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
 
@@ -34,6 +45,13 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
     return
 end
 
+"""
+    compute_residual!(Rh, H, Hold, _dt, _dx,
+    _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
+
+ImplicitGlobalGrid kernel that computes the residual of the dual-time diffusion
+equation, used to know when to stop the virtual time iterations.
+"""
 @parallel_indices (ix,iy,iz) function compute_residual!(Rh, H, Hold, _dt, _dx,
         _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
 
@@ -46,6 +64,20 @@ end
     return
 end
 
+"""
+    diffusion_3D(; ttot, n, nout, do_visu=false)
+
+Creates the 3D steady-state diffusion problem and solves, using a dual-time
+approach. All the physics and numerics are defined in this function. As
+parameters, we can modify:
+    - `ttot`: the total physical time.
+    - `n`: the number of discretised cells per dimension.
+    - `nout`: the number of virtual time iterations before we check the residual.
+    - `do_visu`: if true, each physical time step will be ploted and saved as 
+        an image. In order to produce a video from those images (stored in
+        `plots/part-1`), please execute the script `create_anim.sh` located in
+        the same folder.
+"""
 @views function diffusion_3D(;
         # Physics
         ttot = 1.0,
