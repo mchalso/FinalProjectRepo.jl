@@ -6,7 +6,9 @@ the pseudo-transient acceleration (using the so-called "dual-time" method).
 ## Intro
 
 This part of the project consists in solving the 3D diffusion equation:
-![equation-diffusion](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%3D%20D%20%5Cnabla%20%5E2%20C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
+
+![equation-diffusion](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%3D%20D%20%5Cnabla%20%5E2%20C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+
 To solve it in an efficient manner, we'll make use of the Julia libraries
 `ParallelStencil` and `ImplicitGlobalGrid`, which make the process of writing
 high performant multi-xpu applications almost trivial.
@@ -33,12 +35,16 @@ solution thus reducing the number of iterations needed. We proceed to solve this
 problem as explained in lecture 4:
 
 - We start with the 3D diffusive process:
-![equation-diffusion](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%3D%20D%20%5Cnabla%20%5E2%20C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
+
+![equation-diffusion](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%3D%20D%20%5Cnabla%20%5E2%20C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+
 - We then move every element to the right and introduce the pseudo-time
 integration:
-![equation-pseudo](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%5Ctau%7D%20%3D%20-%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%2B%20D%20%5Cnabla%20%5E2%20C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
+
+![equation-pseudo](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%5Ctau%7D%20%3D%20-%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%2B%20D%20%5Cnabla%5E2%20H&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+
 - For each 'real' timestep, we loop with respect to the 'virtual' time until the
-equation's residual (`R_H`) is below a chosen threshold:
+equation's residual (`R_H`) is below a chosen threshold.
 
 Regarding the spatial discretisation, we will make a cubic grid with equidistant
 points in every direction. This scheme will simplify the coding of the
@@ -61,9 +67,12 @@ In this section, we discuss the results obtained for our implementation.
 
 ### 3D diffusion
 
-|                                         ![diffusion-3d-video](../plots/part-1/diffusion.mp4)                                        |
-|:-----------------------------------------------------------------------------------------------------------------------------------:|
-| Animation of the 3D steady-state diffusion being solved with the dual-time method. Each frame corresponds to one physical time-step |
+
+
+https://user-images.githubusercontent.com/8024691/145982014-db650778-876d-4e5c-a6a1-6e2bc7e4412d.mp4
+
+| Animation of the 3D steady-state diffusion being solved with the dual-time method. Each frame corresponds to one physical time-step. |
+|:--:|
 
 In this animation we can see three different views of the diffusion process. On
 the top one, a 3D representation of the whole domain is shown, rotating between
