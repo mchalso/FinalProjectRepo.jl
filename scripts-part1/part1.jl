@@ -30,8 +30,7 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 ImplicitGlobalGrid kernel that computes a virtual time step of the diffusion 3D
 process.
 """
-@parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, 
-       _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
+@parallel_indices (ix,iy,iz) function compute_dual_time!(H, H2, Hold, dHdt, _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
 
     if (ix<=size_H1_2 && iy<=size_H2_2 && iz<=size_H3_2)
         dHdt[ix,iy,iz] = dmp * dHdt[ix,iy,iz] -
@@ -52,8 +51,7 @@ end
 ImplicitGlobalGrid kernel that computes the residual of the dual-time diffusion
 equation, used to know when to stop the virtual time iterations.
 """
-@parallel_indices (ix,iy,iz) function compute_residual!(Rh, H, Hold, _dt, _dx,
-        _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
+@parallel_indices (ix,iy,iz) function compute_residual!(Rh, H, Hold, _dt, _dx, _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
 
     if (ix<=size_H1_2 && iy<=size_H2_2 && iz<=size_H3_2)
         Rh[ix,iy,iz] = -(H[ix+1,iy+1,iz+1] - Hold[ix+1,iy+1,iz+1]) * _dt -
@@ -99,7 +97,7 @@ parameters, we can modify:
     dx, dy, dz = Lx/nx_g(), Ly/ny_g(), Lz/nz_g()
     dt      = 0.2
     _dt     = 1.0 / dt
-    dtau    = (1.0/(max(dx, dy, dz)^2/D/8.1) + 1.0/dt)^-1
+    dtau    = (1.0/(min(dx, dy, dz)^2/D/6.1) + 1.0/dt)^-1
     nt      = cld(ttot, dt)
     xc, yc, zc  = LinRange(dx/2, Lx-dx/2, nx), LinRange(dy/2, Ly-dy/2, ny), LinRange(dz/2, Lz-dz/2, nz)
     D_dx    = D/dx
@@ -107,18 +105,15 @@ parameters, we can modify:
     D_dz    = D/dz
     _dx, _dy, _dz = 1.0/dx, 1.0/dy, 1.0/dz
     # Array initialisation
-    H0  = @zeros(nx,ny,nz)
-    H0 .= 2.0*Data.Array([exp(-(x_g(ix,dx,H0)+dx/2 -Lx/2)^2 
-                              -(y_g(iy,dy,H0)+dy/2 -Ly/2)^2 
-                              -(z_g(iz,dz,H0)+dz/2 -Lz/2)^2) for ix=1:size(H0,1), 
-                                                                 iy=1:size(H0,2),
-                                                                 iz=1:size(H0,3)])
+    H0    = zeros(nx,ny,nz)
+    H0    = Data.Array([2.0 .* exp(-(x_g(ix,dx,H0)+dx/2 -Lx/2)^2 -(y_g(iy,dy,H0)+dy/2 -Ly/2)^2 -(z_g(iz,dz,H0)+dz/2 -Lz/2)^2) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     H     = copy(H0)
     H2    = copy(H)
     Hold  = copy(H)
     Rh    = @zeros(nx-2,ny-2,nz-2)
     dHdt  = @zeros(nx-2,ny-2,nz-2)
     size_H1_2, size_H2_2, size_H3_2 = size(H,1)-2, size(H,2)-2, size(H,3)-2
+    len_Rh_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
     # Preparation of visualisation
     if do_visu
         GLMakie.activate!()
@@ -132,32 +127,27 @@ parameters, we can modify:
         if (nx_v*ny_v*nz_v*sizeof(Data.Number) > 0.8*Sys.free_memory()) error("Not enough memory for visualization.") end
         H_v   = zeros(nx_v, ny_v, nz_v) # global array for visu
         H_inn = zeros(nx-2, ny-2, nz-2) # no halo local array for visu
-        Xi_g, Yi_g, Zi_g = LinRange(dx+dx/2, Lx-dx-dx/2, nx_v), 
-                           LinRange(dy+dy/2, Ly-dy-dy/2, ny_v),
-                           LinRange(dz+dz/2, Lz-dz-dz/2, nz_v)
+        Xi_g, Yi_g, Zi_g = LinRange(dx+dx/2, Lx-dx-dx/2, nx_v), LinRange(dy+dy/2, Ly-dy-dy/2, ny_v), LinRange(dz+dz/2, Lz-dz-dz/2, nz_v)
     end
 
     t_tic = 0.0; niter_1 = 0
     # Time loop
     t = 0.0; it = 0; ittot = 0;
-    dmp = 1-29/nx
+    dmp = 1-18/nx_g()
     while t<ttot
         if (it==1) t_tic = Base.time(); niter_1 = ittot end
         iter = 0; err = 2*ϵ
 
         while err > ϵ && iter < maxIter
             # @hide_communication (8, 2) begin
-                @parallel compute_dual_time!(H, H2, Hold, dHdt, _dt, dtau, 
-                        _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, 
-                        size_H3_2)
+                @parallel compute_dual_time!(H, H2, Hold, dHdt, _dt, dtau, _dx, _dy, _dz, D_dx, D_dy, D_dz, dmp, size_H1_2, size_H2_2, size_H3_2)
                 H, H2 = H2, H
                 update_halo!(H)
             # end
             iter += 1
             if (iter % nout == 0)
-                @parallel compute_residual!(Rh, H, Hold, _dt, _dx, _dy, _dz, D_dx,
-                                            D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
-                err = norm_g(Rh)
+                @parallel compute_residual!(Rh, H, Hold, _dt, _dx, _dy, _dz, D_dx, D_dy, D_dz, size_H1_2, size_H2_2, size_H3_2)
+                err = norm_g(Rh)/sqrt(len_Rh_g)
             end
         end
         ittot += iter; it += 1; t += dt
@@ -194,4 +184,4 @@ parameters, we can modify:
     return H, xc
 end
 
-#  diffusion_3D(; do_visu=false)
+# diffusion_3D(; do_visu=false)
