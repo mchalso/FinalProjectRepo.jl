@@ -82,6 +82,7 @@ parameters, we can modify:
         # Numerics
         n = 32,
         nout = 10,
+        tol = 1e-8,
         # Visualisation
         do_visu=false)
     # Physics
@@ -89,7 +90,7 @@ parameters, we can modify:
     D       = 1.0
     # Numerics
     nx, ny, nz  = n, n, n # number of grid points
-    ϵ       = 1e-8
+    ϵ       = tol
     maxIter = 1e5
     # Derived numerics
     me, dims = init_global_grid(nx, ny, nz)  # Initialization of MPI and more...
