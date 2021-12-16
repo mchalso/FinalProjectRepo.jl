@@ -162,7 +162,7 @@ We can see our results in the following table.
 
 And the following plot shows it graphically.
 
-![work precission](plots/part-1/work-precission-diagram.png) 
+![work precission](https://github.com/mchalso/FinalProjectRepo.jl/blob/main/plots/part-1/work-precission-diagram.png?raw=true) 
 
 Now we are going to test how the solution changes by adjusting the tolerance of
 the solver. We are going to consider the problem where `nx=ny=nz=32` and
@@ -183,7 +183,7 @@ the difference of the new `H` and the baseline `H`. We get the following values:
 
 That have the corresponding plot:
 
-![tolerance-error](plots/part-1/tolerance-error-diagram.png) 
+![tolerance-error](https://github.com/mchalso/FinalProjectRepo.jl/blob/main/plots/part-1/tolerance-error-diagram.png?raw=true) 
 
 We can see that from `1e-1` onward, the inner loop is ended by the expression
 `iter < maxIter` and thus we get the same error.
