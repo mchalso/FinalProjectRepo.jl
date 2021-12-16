@@ -67,8 +67,6 @@ In this section, we discuss the results obtained for our implementation.
 
 ### 3D diffusion
 
-
-
 https://user-images.githubusercontent.com/8024691/145982014-db650778-876d-4e5c-a6a1-6e2bc7e4412d.mp4
 
 | Animation of the 3D steady-state diffusion being solved with the dual-time method. Each frame corresponds to one physical time-step. |
@@ -133,22 +131,91 @@ compare the total throughput achieved.
 
 | Number of GPUs | Domain size | Throughput (GB/s) | Time (s) |
 | -----------    | ----------  | ----------------  | -------- |
-| 1              | 256x256x256 | 4.19              | 83.604   |
-| 2              |             |                   |          |
-| 4              |             |                   |          |
+| 1              | 256x256x256 | 74.6              | 16.20    |
+| 2              | 510x256x256 | 141.0             | 31.78    |
+| 4              | 510x510x256 | 259.0             | 37.20    |
+
+In order to get these results, we used the command:
+
+```bash
+~/.julia/bin/mpiexecjl -n nproc julia --project scripts-part1/part1.jl
+```
 
 #### Work-precision diagrams
-Provide a figure depicting convergence upon grid refinement; report the
-evolution of a value from the quantity you are diffusing for a specific location
-in the domain as function of numerical grid resolution. Potentially compare
-against analytical solution.
 
-Provide a figure reporting on the solution behaviour as function of the solver's
-tolerance. Report the relative error versus a well-converged problem for various
-tolerance-levels. 
+We now perform an evaluation of the algorithm convergence given a certain grid
+refinement. Ideally, the more density of points we have the more our results
+will imitate reality. To prove this, we are going to check the value of the
+center of the domain given different grid sizes. We expect to observe that the
+value converges as we increase the grid size.
+
+We can see our results in the following table.
+
+| Size | H[n/2, n/2, n/2] |
+|------|------------------|
+| 16   | 0.22058          |
+| 32   | 0.22548          |
+| 64   | 0.22659          |
+| 128  | 0.22686          |
+| 256  | 0.22693          |
+| 512  | 0.22696          |
+
+And the following plot shows it graphically.
+
+![work precission](plots/part-1/work-precission-diagram.png) 
+
+Now we are going to test how the solution changes by adjusting the tolerance of
+the solver. We are going to consider the problem where `nx=ny=nz=32` and
+`tol=1e-8` as a baseline. To compute the errors, we are going to use the norm of
+the difference of the new `H` and the baseline `H`. We get the following values:
+
+| Tol  | Error      |
+|------|------------|
+| 1e-8 | 0          |
+| 1e-7 | 4.33232e-6 |
+| 1e-6 | 3.11549e-5 |
+| 1e-5 | 6.39017e-4 |
+| 1e-4 | 7.43127e-3 |
+| 1e-3 | 5.65919e-2 |
+| 1e-2 | 0.393818   |
+| 1e-1 | 0.625191   |
+| 1e-0 | 0.625191   |
+
+That have the corresponding plot:
+
+![tolerance-error](plots/part-1/tolerance-error-diagram.png) 
+
+We can see that from `1e-1` onward, the inner loop is ended by the expression
+`iter < maxIter` and thus we get the same error.
 
 ## Discussion
-Discuss and conclude on your results
+
+In this part of the final project, we have implemented a multi-xpu 3D diffusion
+solver, that is, without changing the implementation we are able to run this
+solver in either one or multiple machines, using GPU or CPU. We have tested our
+implementation against the reference test given by the teaching staff, and
+evaluated its performance on the CPU of an average desktop (Ryzen 3600) as well
+as at the Octopus supercomputer (with up to 4 GTX TITAN X). In both cases, we
+reached at the conclusion that we were compute bounded. This makes sense because
+the GPUs used are not recent models, were the gap between the compute and memory
+speeds is much more significant.
+
+To test the performance of the multi-gpu application, first we perform tests of
+strong scaling in order to obtain the optimum problem size for our hardware.
+Once we know it, we proceed to execute the exact same problem on multiple
+processors making use of `ImplicitGlobalGrid` (weak scaling). We can see that
+our throughput increases with the number of GPUs used, but we can also
+appreciate that the increase is not linear and slows down with the number of
+GPUs used. This is because of the need to synchronize the global problem
+updating the halo at each timestep.
+
+We conclude this part by making two plots: the work-precission diagram and the
+tolerance-error diagram. The latter shows how the computed steady-state diverges
+from a well-converged problem the more we decrease the tolerance, we can see
+that this growth is linear (since the x-scale is logarithmic). Whereas for the
+work-precission diagram, we show how the value of the exact middle of the domain
+evolves when we change the domain resolution. As expected, it converges
+to its true value the more resolution we use.
 
 <!-- ## References -->
 
