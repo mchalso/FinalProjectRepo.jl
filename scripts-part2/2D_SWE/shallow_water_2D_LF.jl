@@ -8,7 +8,12 @@
 
 using Plots
 
-@views function shallow_water_2D()
+@views function shallow_water_2D(;
+    # Numerics
+    nx = 512,
+    ny = 256,
+    # Visualisation
+    do_viz=true)
     # Physics
     Lx, Ly = 40.0, 20.0
     g      = 9.81
@@ -17,7 +22,6 @@ using Plots
     ttot   = 20
     H_init = 5.0
     # Numerics
-    nx, ny = 512, 256
     nout   = 100
     H_min  = 1.0
     # Derived numerics
@@ -75,7 +79,7 @@ using Plots
         u .= u_new
         v .= v_new
 
-        if it % nout == 0
+        if do_viz && (it % nout == 0)
             p1=plot(xc, H[:,round(Int64(ny/2))], xlims=(xc[1], xc[end]), ylims=(0, 10),
                xlabel="Lx at y=10 (m)", ylabel="water surface elevation (m)", label="h",
                 title="time = $(round(it*dt, sigdigits=3)) s", linewidth=:1.0, framestyle=:box)
@@ -88,7 +92,7 @@ using Plots
             display(surface(xc, yc, H'; opts...))
         end
     end
-    return
+    return H 
 end
 
-shallow_water_2D()
+shallow_water_2D(;nx=256,ny=128)
