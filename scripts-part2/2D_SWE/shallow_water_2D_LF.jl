@@ -95,4 +95,4 @@ using Plots
     return H 
 end
 
-shallow_water_2D(;nx=256,ny=128)
+# shallow_water_2D(;nx=256,ny=128)
