@@ -27,16 +27,7 @@ macro H_dy(ix,iy) esc(:( H[$ix,$iy+1] - H[$ix,$iy] )) end
 end
 
 @parallel_indices (ix,iy) function compute_H!(H_new, H, G, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2) 
-	if (ix<=size_H1_2 && iy==size(H,2))
-		H_new[ix+1,iy] = (H[ix+1,iy] 
-					- dt_dx * (1/2 * (H[ix+2,iy]*u[ix+2,iy] - H[ix,iy] * u[ix,iy]) - λx_2 * (@H_dx(ix+1,iy) - @H_dx(ix,iy)))
-					# + dt_dy * 1/2 * (H[ix+1,iy-1] * v[ix+1,iy-1] + H[ix+1,iy]*v[ix+1,iy]) - λy_2 * @H_dy(ix+1,iy-1))
-					+ dt_dy * G[ix+1,iy]) 
-	elseif (ix<=size_H1_2 && iy==0)
-		H_new[ix+1,iy] = (H[ix+1,iy] 
-					- dt_dx * (1/2 * (H[ix+2,iy]*u[ix+2,iy] - H[ix,iy] * u[ix,iy]) - λx_2 * (@H_dx(ix+1,iy) - @H_dx(ix,iy)))
-					- dt_dy * G[ix+1,iy+1]) 
-	elseif (ix<=size_H1_2 && iy<=size(H,2))
+	if (ix<=size_H1_2 && iy<=size(H,2))
 		H_new[ix+1,iy] = (H[ix+1,iy] 
 					- dt_dx * (1/2 * (H[ix+2,iy]*u[ix+2,iy] - H[ix,iy] * u[ix,iy]) - λx_2 * (@H_dx(ix+1,iy) - @H_dx(ix,iy)))
 					- dt_dy * (G[ix+1,iy+1] - G[ix+1,iy])) 
@@ -105,8 +96,8 @@ end
 	
 	# Array initialisation
 	H      = @zeros(nx  , ny  ) .+ H_min
-	# H[1:round(Int64(nx/2)), :] = @zeros(round(Int64(nx/2)), ny) .+ H_init #1D dam break
-	H[:,1:round(Int64(ny/2))] = zeros(Float64, nx, round(Int64(ny/2))) .+ H_init #1D dam break in y direction
+	H[1:round(Int64(nx/2)), :] = @zeros(round(Int64(nx/2)), ny) .+ H_init #1D dam break in x-direction
+	# H[:,1:round(Int64(ny/2))] = zeros(Float64, nx, round(Int64(ny/2))) .+ H_init #1D dam break in y direction
 	H_new  = copy(H)
 	u      = @zeros(nx  , ny  )
 	u_new  = copy(u)

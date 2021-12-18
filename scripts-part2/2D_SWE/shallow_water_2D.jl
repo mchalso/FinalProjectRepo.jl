@@ -29,8 +29,8 @@ using Plots
     xc, yc = LinRange(dx/2, Lx-dx/2, nx), LinRange(dy/2, Ly-dy/2, ny)
     # Initial Conditions
     H      = zeros(Float64, nx  , ny  ) .+ H_min
-    # H[1:round(Int64(nx/2)), :] = zeros(Float64, round(Int64(nx/2)), ny) .+ H_init #1D dam break in x-direction
-    H[:,1:round(Int64(ny/2))] = zeros(Float64, nx, round(Int64(ny/2))) .+ H_init #1D dam break in y direction
+    H[1:round(Int64(nx/2)), :] = zeros(Float64, round(Int64(nx/2)), ny) .+ H_init #1D dam break in x-direction
+    # H[:,1:round(Int64(ny/2))] = zeros(Float64, nx, round(Int64(ny/2))) .+ H_init #1D dam break in y direction
     #H[1:round(Int64(nx/2)), 1:round(Int64(ny/2))] = zeros(Float64, round(Int64(nx/2)), round(Int64(ny/2))) .+ H_init #2D dam break
     #H[round(Int64(3*nx/8)):round(Int64(5*nx/8)), round(Int64(3*ny/8)):round(Int64(5*ny/8))] = zeros(Float64, round(Int64(nx/4))+1, round(Int64(ny/4))+1) .+ H_init #2D water column
     # Array initialisation
