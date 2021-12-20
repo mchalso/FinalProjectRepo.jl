@@ -28,8 +28,14 @@ using Plots
     dHdx   = zeros(Float64, nx-1)
     dudx   = zeros(Float64, nx-1)
     dudt   = zeros(Float64, nx-1)
+    t_tic = 0.0
+    niter = 0
     # Time loop
     for it = 0:nt
+        if (it == 11)
+            t_tic = Base.time()
+            niter = 0
+        end
         dHdx       .= diff(H) ./ dx
         dudx       .= diff(u) ./ dx
         dudt       .= -1/2 .* (u[1:end-1].+u[2:end]) .* dudx .- (g .* dHdx) #momentum
@@ -39,6 +45,8 @@ using Plots
         u[2:end-1] .= u[2:end-1] .+ 1/2 .* (dudt[1:end-1] .+ dudt[2:end]) .* dt
         u[1]        = -u[2]
         u[end]      = -u[end-1]
+
+        niter += 1
         if do_visu && (it % nout == 0)
             p1=plot(xc, H, xlims=(xc[1], xc[end]), ylims=(0, 10),
                 xlabel="Lx (m)", ylabel="water surface elevation (m)", label="h",
@@ -48,7 +56,12 @@ using Plots
             display(p1)
         end
     end
+    t_toc = Base.time() - t_tic
+    A_eff = (2 * 2) / 1e9 * nx * sizeof(Float64)  # Effective main memory access per iteration [GB]
+    t_it = t_toc / niter                      # Execution time per iteration [s]
+    T_eff = A_eff / t_it                       # Effective memory throughput [GB/s]
+    @printf("Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
     return H
 end
 
-# shallow_water_1D(do_visu=true)
+# shallow_water_1D(;do_visu=true)

@@ -117,7 +117,7 @@ As parameters, we can modify:
     return Array(H)
 end
 
-shallow_water_1D_xpu(;do_visu=true)
+# shallow_water_1D_xpu(;do_visu=true)
 
 # include("./shallow_water_1D_LF.jl")
 # using Test
