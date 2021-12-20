@@ -14,7 +14,7 @@ The shallow water equations are a set of hyperbolic partial differential equatio
 ### Conservation of Momentum in Y-direction  
 ![equation-2DSWE-momentumy](http://www.sciweavers.org/download/Tex2Img_1640035339.jpg)
 
-The purpose of this shallow water equations solver is to model an instantaneous dam breach. The model domain has a length of 40 meters and a width of 20 meters. Half of the domain (a 20 meter x 20 meter region) has an initial water level of 5 meters, while the other half (also a 20 meter x 20 meter region) has an initial water level of 1 meter. The model setup matches that of a test case used in the validation of the software BASEMENT version 2.8, Test Case H_1 "Dam break in a closed channel."
+The purpose of this shallow water equations solver is to model an instantaneous dam breach. The model domain has a length of 40 meters and a width of 20 meters. Half of the domain (a 20 meter x 20 meter region) has an initial water level of 5 meters, while the other half (also a 20 meter x 20 meter region) has an initial water level of 1 meter. The model setup matches that of a test case used in the validation of the software BASEMENT version 2.8, [Test Case](http://people.ee.ethz.ch/~basement/baseweb/download/documentation/BMdoc_Testcases_v2-8-1.pdf) H_1 "Dam break in a closed channel" 
 
 <!-- What's all about. Brief overview about: -->
 <!-- - the process -->
