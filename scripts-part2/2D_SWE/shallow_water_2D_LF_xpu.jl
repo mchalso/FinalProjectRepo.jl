@@ -14,18 +14,22 @@ end
 macro H_dy(ix, iy)
     esc(:(H[$ix, $iy+1] - H[$ix, $iy]))
 end
-
-@parallel_indices (ix, iy) function compute_G!(G, H, v, λy_2, size_H2_1)
-    if (ix <= size(H, 1) && iy <= size_H2_1)
-        G[ix, iy+1] =
-            1 / 2 * (H[ix, iy] * v[ix, iy] + H[ix, iy+1] * v[ix, iy+1]) -
-            λy_2 * @H_dy(ix, iy)
-    end
-    return
+macro Hv_dy(ix, iy)
+    esc(:(H[$ix, $iy+1] * v[$ix, $iy+1] - H[$ix, $iy] * v[$ix, $iy]))
+end
+macro Hv_py(ix, iy)
+    esc(:(H[$ix, $iy+1] * v[$ix, $iy+1] + H[$ix, $iy] * v[$ix, $iy]))
+end
+macro Huv_px(ix, iy)
+    esc(:(H[$ix+1, $iy] * u[$ix+1, $iy] * v[$ix+1, $iy] + H[$ix, $iy] * u[$ix, $iy] * v[$ix, $iy]))
+end
+macro Huv_dx(ix, iy)
+    esc(:(H[$ix, $iy+1] * v[$ix, $iy+1] * u[$ix, $iy+1] - H[$ix, $iy] * v[$ix, $iy] * u[$ix, $iy]))
 end
 
+
 """
-	compute_H!(H_new, H, G, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
+	compute_H!(H_new, H, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
 
 ParallelStencil kernel that computes a time step of the shallow water 2D
 process.
@@ -33,7 +37,6 @@ process.
 @parallel_indices (ix, iy) function compute_H!(
     H_new,
     H,
-    G,
     u,
     v,
     dt_dx,
@@ -43,28 +46,30 @@ process.
     λy_2,
 )
     if (ix <= size_H1_2 && iy <= size(H, 2))
-        H_new[ix+1, iy] = (
-            H[ix+1, iy] -
-            dt_dx * (
-                1 / 2 * (H[ix+2, iy] * u[ix+2, iy] - H[ix, iy] * u[ix, iy]) -
-                λx_2 * (@H_dx(ix + 1, iy) - @H_dx(ix, iy))
-            ) - dt_dy * (G[ix+1, iy+1] - G[ix+1, iy])
+        temp = H[ix+1, iy] -
+               dt_dx * (
+            1 / 2 * (H[ix+2, iy] * u[ix+2, iy] - H[ix, iy] * u[ix, iy]) -
+            λx_2 * (@H_dx(ix + 1, iy) - @H_dx(ix, iy))
         )
-    end
-    return
-end
-
-@parallel_indices (ix, iy) function compute_G2!(G, H, u, v, size_H2_1)
-    if (ix <= size(H, 1) && iy <= size_H2_1)
-        G[ix, iy+1] =
-            1 / 2 *
-            (H[ix, iy] * u[ix, iy] * v[ix, iy] + H[ix, iy+1] * u[ix, iy+1] * v[ix, iy+1])
+        if (iy == size(H, 2))
+            H_new[ix+1, iy] = (
+                temp + dt_dy * (1 / 2 * @Hv_py(ix + 1, iy - 1) - λy_2 * @H_dy(ix + 1, iy - 1))
+            )
+        elseif (iy == 1)
+            H_new[ix+1, iy] = (
+                temp - dt_dy * (1 / 2 * @Hv_py(ix + 1, iy) - λy_2 * @H_dy(ix + 1, iy))
+            )
+        else
+            H_new[ix+1, iy] = (
+                temp - dt_dy * (1 / 2 * (@Hv_dy(ix + 1, iy) + @Hv_dy(ix + 1, iy - 1)) - λy_2 * (@H_dy(ix + 1, iy) - @H_dy(ix + 1, iy - 1)))
+            )
+        end
     end
     return
 end
 
 """
-	compute_u!(u_new, u, H_new, H, G, dt_dx, dt_dy, size_H1_2, g) 	
+    compute_u!(u_new, u, H_new, H, dt_dx, dt_dy, size_H1_2, g) 	
 
 ParallelStencil kernel that computes the Lax-Friedrichs for the momentum in x-direction of the shallow water
 equations.
@@ -74,7 +79,6 @@ equations.
     u,
     H_new,
     H,
-    G,
     dt_dx,
     dt_dy,
     size_H1_2,
@@ -87,23 +91,14 @@ equations.
                 dt_dx * 1 / 2 * (
                     H[ix+2, iy] * u[ix+2, iy]^2 + 0.5 * g * H[ix+2, iy]^2 -
                     H[ix, iy] * u[ix, iy]^2 - 0.5 * g * H[ix, iy]^2
-                ) - dt_dy * (G[ix+1, iy+1] - G[ix+1, iy+1])
+                )
             ) / H_new[ix+1, iy]
     end
     return
 end
 
-@parallel_indices (ix, iy) function compute_F!(F, H, u, v, size_H1_1)
-    if (ix <= size_H1_1 && iy <= size(H, 2))
-        F[ix+1, iy] =
-            1 / 2 *
-            (H[ix, iy] * u[ix, iy] * v[ix, iy] + H[ix+1, iy] * u[ix+1, iy] * v[ix+1, iy])
-    end
-    return
-end
-
 """
-	compute_v!(v_new, v, H_new, H, F, dt_dx, dt_dy, size_H2_2, g)	
+    compute_v!(v_new, v, H_new, H, u, dt_dx, dt_dy, size_H2_2, g)
 
 ParallelStencil kernel that computes the Lax-Friedrichs for the momentum in y-direction of the shallow water
 equations.
@@ -113,22 +108,34 @@ equations.
     v,
     H_new,
     H,
-    F,
+    u,
     dt_dx,
     dt_dy,
     size_H2_2,
     g,
 )
     if (ix <= size(H, 1) && iy <= size_H2_2)
-        v_new[ix, iy+1] =
-            (
-                1 / 2 * (H[ix, iy] * v[ix, iy] + H[ix, iy+2] * v[ix, iy+2]) -
-                dt_dx * (F[ix+1, iy+1] - F[ix, iy+1]) -
-                dt_dy * 1 / 2 * (
-                    H[ix, iy+2] * v[ix, iy+2]^2 - H[ix, iy] * v[ix, iy]^2 +
-                    0.5 * g * H[ix, iy+2]^2 - 0.5 * g * H[ix, iy]^2
-                )
-            ) / H_new[ix, iy+1]
+        temp = 1 / 2 * (H[ix, iy] * v[ix, iy] + H[ix, iy+2] * v[ix, iy+2]) - dt_dy * 1 / 2 * (
+            H[ix, iy+2] * v[ix, iy+2]^2 - H[ix, iy] * v[ix, iy]^2 +
+            0.5 * g * H[ix, iy+2]^2 - 0.5 * g * H[ix, iy]^2
+        )
+        if (ix == size(H, 1))
+            v_new[ix, iy+1] =
+                (
+                    temp + dt_dx * 1 / 2 * @Huv_px(ix - 1, iy + 1)
+                ) / H_new[ix, iy+1]
+        elseif (ix == 1)
+            v_new[ix, iy+1] =
+                (
+                    temp - dt_dx * 1 / 2 * @Huv_px(ix, iy + 1)
+                ) / H_new[ix, iy+1]
+        else
+            v_new[ix, iy+1] =
+                (
+                    temp - dt_dx * 1 / 2 * (@Huv_dx(ix + 1, iy + 1) + @Huv_dx(ix - 1, iy + 1))
+                ) / H_new[ix, iy+1]
+
+        end
     end
     return
 end
@@ -157,7 +164,8 @@ H must be set throughout the domain, to avoid numerical instability.
 As parameters, we can modify:
     - `nx`: number of discretised cells for x dimension.
     - `ny`: number of discretised cells for y dimension.
-    - `dam_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. 
+    - `dam1D_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. dam2D needs to be false to activate 1D dam break. 
+    - `dam2D`: if true, 2D dam break
     - `do_visu`: if true, each physical time step will be ploted.
 """
 @views function shallow_water_2D_xpu(;
@@ -165,7 +173,8 @@ As parameters, we can modify:
     nx = 512,
     ny = 256,
     # Modeling
-    dam_x = true,
+    dam1D_x = true,
+    dam2D = false,
     # Visualisation
     do_visu = true
 )
@@ -184,20 +193,19 @@ As parameters, we can modify:
 
     # Array initialisation
     H = @zeros(nx, ny) .+ H_min
-    if (dam_x)
+    if (dam1D_x && !dam2D)
         H[1:round(Int64(nx / 2)), :] = @zeros(round(Int64(nx / 2)), ny) .+ H_init #1D dam break in x-direction
-    else
+    elseif (!dam1D_x && !dam2D)
         H[:, 1:round(Int64(ny / 2))] = zeros(Float64, nx, round(Int64(ny / 2))) .+ H_init #1D dam break in y direction
+    else
+        H[1:round(Int64(nx/2)), 1:round(Int64(ny/2))] = zeros(Float64, round(Int64(nx/2)), round(Int64(ny/2))) .+ H_init #2D dam break
     end
     H_new = copy(H)
     u = @zeros(nx, ny)
     u_new = copy(u)
     v = @zeros(nx, ny)
     v_new = copy(v)
-    F = @zeros(nx + 1, ny)
-    G = @zeros(nx, ny + 1)
     size_H1_2, size_H2_2 = size(H, 1) - 2, size(H, 2) - 2
-    size_H1_1, size_H2_1 = size(H, 1) - 1, size(H, 2) - 1
     t_tic = 0.0
     niter = 0
     time = 0
@@ -215,16 +223,13 @@ As parameters, we can modify:
         λx_2, λy_2 = λx / 2, λy / 2
 
         #Lax-Friedrichs for Continuity
-        @parallel compute_G!(G, H, v, λy_2, size_H2_1)
-        @parallel compute_H!(H_new, H, G, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
+        @parallel compute_H!(H_new, H, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
 
         #Lax-Friedrichs for Momentum in x-direction
-        @parallel compute_G2!(G, H, u, v, size_H2_1)
-        @parallel compute_u!(u_new, u, H_new, H, G, dt_dx, dt_dy, size_H1_2, g)
+        @parallel compute_u!(u_new, u, H_new, H, dt_dx, dt_dy, size_H1_2, g)
 
         #Lax-Friedrichs for Momentum in y-direction
-        @parallel compute_F!(F, H, u, v, size_H1_1)
-        @parallel compute_v!(v_new, v, H_new, H, F, dt_dx, dt_dy, size_H2_2, g)
+        @parallel compute_v!(v_new, v, H_new, H, u, dt_dx, dt_dy, size_H2_2, g)
 
         #No-flux boundary conditions
         @parallel 1:size(H, 2) bc_x!(H_new)
@@ -239,16 +244,9 @@ As parameters, we can modify:
 
         niter += 1
         if do_visu && (it % nout == 0)
-            p1 = plot(xc, Array(H[:, round(Int64(ny / ny))]), xlims = (xc[1], xc[end]), ylims = (-3, 8),
-                xlabel = "Lx at y=10 (m)", ylabel = "water surface elevation (m)", label = "h",
-                title = "time = $(round(time, sigdigits=3)) s", linewidth = :1.0, framestyle = :box)
-            plot!(xc, u[:, round(Int64(ny / ny))], label = "u", linewidth = :1.0)
-            plot!(xc, v[:, round(Int64(ny / ny))], label = "v", linewidth = :1.0)
-            display(p1)
-            # opts = (aspect_ratio=1, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), zlims=(H_min, H_init),
-            # 	clims=(H_min, H_init), c=:blues, xlabel="Lx", ylabel="Ly", zlabel="water surface",
-            # 	title="time = $(round(it*dt, sigdigits=3))")
-            # display(surface(xc, yc, H'; opts...))
+            z_max = maximum(H)
+            z_min = minimum(H)
+            plot(xc, yc, Array(H)', st = :surface, xlims = (xc[1], xc[end]), ylims = (yc[1], yc[end]), zlims = (z_min, z_max), c = :blues, colorbar = false, xlabel = "Lx", ylabel = "Ly", zlabel = "water surface elevation (m)", title = "time = $(round(time, sigdigits=3)) s")
         end
     end
     t_toc = Base.time() - t_tic
@@ -266,10 +264,10 @@ end
 
 # shallow_water_2D_xpu(;nx=128, ny=64, do_visu=true)
 
-include("./shallow_water_2D.jl")
-using Test
-@testset "Height H" begin
-    H_xpu = shallow_water_2D_xpu(; nx = 128, ny = 64, do_visu = false)
-    H_cpu = shallow_water_2D(; nx = 128, ny = 64, do_visu = false)
-    @test H_xpu ≈ H_cpu
-end;
+# include("./shallow_water_2D.jl")
+# using Test
+# @testset "Height H" begin
+#     H_xpu = shallow_water_2D_xpu(; nx = 128, ny = 64, do_visu = false)
+#     H_cpu = shallow_water_2D(; nx = 128, ny = 64, do_visu = false)
+#     @test H_xpu ≈ H_cpu
+# end;

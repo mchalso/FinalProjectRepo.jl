@@ -1,19 +1,19 @@
-include("../scripts-part2/2D_SWE/shallow_water_2D_LF_xpu_mpi.jl")
+include("../scripts-part2/2D_SWE/shallow_water_2D_LF_xpu.jl")
 include("../scripts-part2/2D_SWE/shallow_water_2D.jl")
 
 using Test
-@testset "Height H between baseline and MPI implementation for dam breaks in y-direction" begin
-    H_xpu, xc = shallow_water_2D_xpu(; nx = 128, ny = 64, dam1D_x = false, do_visu = false)
-    H_cpu = shallow_water_2D(; nx = 128, ny = 64, dam_x = false, do_visu = false)
-    @test H_xpu ≈ H_cpu
+@testset "Height H between baseline and xpu implementation" begin
+	@test "dam breaks in y-direction" begin  
+		H_xpu, xc = shallow_water_2D_xpu(; nx = 128, ny = 64, dam1D_x = false, do_visu = false)
+		H_cpu = shallow_water_2D(; nx = 128, ny = 64, dam_x = false, do_visu = false)
+		@test H_xpu ≈ H_cpu
+	end
+	@test "dam breaks in x-direction" begin  
+		H_xpu, xc = shallow_water_2D_xpu(; nx = 128, ny = 64, dam1D_x = true, do_visu = false)
+		H_cpu = shallow_water_2D(; nx = 128, ny = 64, dam_x = true, do_visu = false)
+		@test H_xpu ≈ H_cpu
+	end
 end;
-
-@testset "Height H between baseline and MPI implementation for dam breaks in x-direction" begin
-    H_xpu, xc = shallow_water_2D_xpu(; nx = 128, ny = 64, dam1D_x = true, do_visu = false)
-    H_cpu = shallow_water_2D(; nx = 128, ny = 64, dam_x = true, do_visu = false)
-    @test H_xpu ≈ H_cpu
-end;
-
 
 ## Reference Tests with ReferenceTests.jl
 "Compare all dict entries"

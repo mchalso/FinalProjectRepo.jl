@@ -105,10 +105,10 @@ end
 
 # shallow_water_1D_xpu(;do_visu=true)
 
-include("./shallow_water_1D_LF.jl")
-using Test
-@testset "Height H" begin
-	H_xpu = shallow_water_1D_xpu()
-	H_cpu = shallow_water_1D(;do_visu=false)
-	@test H_xpu ≈ H_cpu 
-end;
+# include("./shallow_water_1D_LF.jl")
+# using Test
+# @testset "Height H" begin
+# 	H_xpu = shallow_water_1D_xpu()
+# 	H_cpu = shallow_water_1D(;do_visu=false)
+# 	@test H_xpu ≈ H_cpu 
+# end;

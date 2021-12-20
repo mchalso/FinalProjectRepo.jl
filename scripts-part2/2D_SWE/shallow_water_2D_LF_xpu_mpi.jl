@@ -69,7 +69,7 @@ process.
 end
 
 """
-	compute_u!(u_new, u, H_new, H, G, dt_dx, dt_dy, size_H1_2, g) 	
+	compute_u!(u_new, u, H_new, H, dt_dx, dt_dy, size_H1_2, g) 	
 
 ParallelStencil kernel that computes the Lax-Friedrichs for the momentum in x-direction of the shallow water
 equations.
@@ -98,7 +98,7 @@ equations.
 end
 
 """
-	compute_v!(v_new, v, H_new, H, F, dt_dx, dt_dy, size_H2_2, g)	
+	compute_v!(v_new, v, H_new, H, u, dt_dx, dt_dy, size_H2_2, g)	
 
 ParallelStencil kernel that computes the Lax-Friedrichs for the momentum in y-direction of the shallow water
 equations.
