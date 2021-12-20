@@ -1,3 +1,6 @@
+#src # This is needed to make this run as normal Julia file
+using Markdown #src
+
 # Part 2: 2D Shallow Water Equations Solver
 Solution of the shallow water equations in one and two dimensions. The equations are solved using Julia on multi-GPUs.
 
