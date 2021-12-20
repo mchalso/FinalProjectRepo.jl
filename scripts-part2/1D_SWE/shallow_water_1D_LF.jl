@@ -6,6 +6,23 @@
 
 using Plots
 
+"""
+    shallow_water_1D(;do_viz=false)
+
+2D shallow water equations solver for an instantaneous dam break.
+The Lax-Friedrichs Method was applied to the continuity equation.
+Geometry (length of 40 meters, width of 20 meters) and initial conditions 
+(half of domain has initial water level of 5 meters, other half is dry) 
+matches BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel."
+Solution of momentum equations requires division by H. Therefore a minimum
+H must be set throughout the domain, to avoid numerical instability.
+As parameters, we can modify:
+    - `nx`: number of discretised cells for x dimension.
+    - `ny`: number of discretised cells for y dimension.
+    - `dam1D_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. dam2D needs to be false to activate 1D dam break. 
+    - `dam2D`: if true, 2D dam break
+    - `do_visu`: if true, each physical time step will be ploted.
+"""
 @views function shallow_water_1D(;do_viz=false)
     # Physics
     Lx     = 40.0

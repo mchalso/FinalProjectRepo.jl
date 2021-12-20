@@ -12,8 +12,10 @@ using Plots
     # Numerics
     nx = 512,
     ny = 256,
+    # Modeling
+    dam_x = true,
     # Visualisation
-    do_viz=true)
+    do_visu=true)
     # Physics
     Lx, Ly = 40.0, 20.0
     g      = 9.81
@@ -29,8 +31,11 @@ using Plots
     xc, yc = LinRange(dx/2, Lx-dx/2, nx), LinRange(dy/2, Ly-dy/2, ny)
     # Initial Conditions
     H      = zeros(Float64, nx  , ny  ) .+ H_min
-    H[1:round(Int64(nx/2)), :] = zeros(Float64, round(Int64(nx/2)), ny) .+ H_init #1D dam break in x-direction
-    # H[:,1:round(Int64(ny/2))] = zeros(Float64, nx, round(Int64(ny/2))) .+ H_init #1D dam break in y direction
+    if (dam_x)
+        H[1:round(Int64(nx / 2)), :] = @zeros(round(Int64(nx / 2)), ny) .+ H_init #1D dam break in x-direction
+    else
+        H[:, 1:round(Int64(ny / 2))] = zeros(Float64, nx, round(Int64(ny / 2))) .+ H_init #1D dam break in y direction
+    end
     #H[1:round(Int64(nx/2)), 1:round(Int64(ny/2))] = zeros(Float64, round(Int64(nx/2)), round(Int64(ny/2))) .+ H_init #2D dam break
     #H[round(Int64(3*nx/8)):round(Int64(5*nx/8)), round(Int64(3*ny/8)):round(Int64(5*ny/8))] = zeros(Float64, round(Int64(nx/4))+1, round(Int64(ny/4))+1) .+ H_init #2D water column
     # Array initialisation
@@ -71,20 +76,20 @@ using Plots
         u .= u_new
         v .= v_new
 
-        if do_viz && (it % nout == 0)
+        if do_visu && (it % nout == 0)
             p1=plot(xc, H[:,round(Int64(ny/ny))], xlims=(xc[1], xc[end]), ylims=(-3, 8),
                xlabel="Lx at y=10 (m)", ylabel="water surface elevation (m)", label="h",
                 title="time = $(round(time, sigdigits=3)) s", linewidth=:1.0, framestyle=:box)
             plot!(xc, u[:,round(Int64(ny/ny))], label="u", linewidth=:1.0)
             plot!(xc, v[:,round(Int64(ny/ny))], label="v", linewidth=:1.0)
             display(p1)
-            #opts = (aspect_ratio=1, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), zlims=(H_min, H_init),
+            # opts = (aspect_ratio=1, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), zlims=(H_min, H_init),
             #        clims=(H_min, H_init), c=:blues, xlabel="Lx", ylabel="Ly", zlabel="water surface",
             #        title="time = $(round(time, sigdigits=3))")
-            #display(surface(xc, yc, H'; opts...))
+            # display(surface(xc, yc, H'; opts...))
         end
     end
     return H
 end
 
-# shallow_water_2D()
+# shallow_water_2D(; do_visu=true)

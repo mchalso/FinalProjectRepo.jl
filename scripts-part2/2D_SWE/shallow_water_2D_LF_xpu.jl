@@ -167,7 +167,7 @@ As parameters, we can modify:
     # Modeling
     dam_x = true,
     # Visualisation
-    do_viz = false,
+    do_visu = true
 )
     # Physics
     Lx, Ly = 40.0, 20.0
@@ -213,7 +213,7 @@ As parameters, we can modify:
         λy = dy / 2 / dt #y-direction signal speed for Lax-Friedrichs scheme
         dt_dx, dt_dy = dt / dx, dt / dy
         λx_2, λy_2 = λx / 2, λy / 2
-	  
+
         #Lax-Friedrichs for Continuity
         @parallel compute_G!(G, H, v, λy_2, size_H2_1)
         @parallel compute_H!(H_new, H, G, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
@@ -238,19 +238,10 @@ As parameters, we can modify:
         v .= v_new
 
         niter += 1
-        if do_viz && (it % nout == 0)
-            p1 = plot(
-                xc,
-                H[:, round(Int64(ny / ny))],
-                xlims = (xc[1], xc[end]),
-                ylims = (-3, 8),
-                xlabel = "Lx at y=10 (m)",
-                ylabel = "water surface elevation (m)",
-                label = "h",
-                title = "time = $(round(time, sigdigits=3)) s",
-                linewidth = :1.0,
-                framestyle = :box,
-            )
+        if do_visu && (it % nout == 0)
+            p1 = plot(xc, Array(H[:, round(Int64(ny / ny))]), xlims = (xc[1], xc[end]), ylims = (-3, 8),
+                xlabel = "Lx at y=10 (m)", ylabel = "water surface elevation (m)", label = "h",
+                title = "time = $(round(time, sigdigits=3)) s", linewidth = :1.0, framestyle = :box)
             plot!(xc, u[:, round(Int64(ny / ny))], label = "u", linewidth = :1.0)
             plot!(xc, v[:, round(Int64(ny / ny))], label = "v", linewidth = :1.0)
             display(p1)
@@ -273,12 +264,12 @@ As parameters, we can modify:
     return Array(H)
 end
 
-# shallow_water_2D_xpu(;nx=128, ny=64, do_viz=false)
+# shallow_water_2D_xpu(;nx=128, ny=64, do_visu=true)
 
 include("./shallow_water_2D.jl")
 using Test
 @testset "Height H" begin
-    H_xpu = shallow_water_2D_xpu(; nx = 128, ny = 64, do_viz = false)
-    H_cpu = shallow_water_2D(; nx = 128, ny = 64, do_viz = false)
+    H_xpu = shallow_water_2D_xpu(; nx = 128, ny = 64, do_visu = false)
+    H_cpu = shallow_water_2D(; nx = 128, ny = 64, do_visu = false)
     @test H_xpu ≈ H_cpu
 end;
