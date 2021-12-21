@@ -1,11 +1,16 @@
-# 1D shallow water equations solver for an instantaneous dam break.
-# The Lax-Friedrichs Method was applied to the continuity equation.
-# Geometry (length of 40 meters) and initial conditions (half of domain 
-# have initial water level of 5 meters, other half is dry) match 
-# BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel"
-
 using Plots
 
+"""
+    shallow_water_1D(;do_visu=false)
+
+1D shallow water equations solver for an instantaneous dam break.
+The Lax-Friedrichs Method was applied to the continuity equation.
+Geometry (length of 40 meters) and initial conditions (half of domain 
+have initial water level of 5 meters, other half is dry) match 
+BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
+As parameters, we can modify:
+    - `do_visu`: if true, each physical time step will be ploted.
+"""
 @views function shallow_water_1D(;do_visu=false)
     # Physics
     Lx     = 40.0
@@ -52,7 +57,7 @@ using Plots
                 xlabel="Lx (m)", ylabel="water surface elevation (m)", label="h",
                 title="time = $(round(it*dt, sigdigits=3)) s, stability: $(round(maximum(abs.(u))*dt/dx,sigdigits=3)) /1", 
                 linewidth=:1.0, framestyle=:box)
-            #plot!(xc, u, label="u", linewidth=:1.0)
+            plot!(xc, u, label="u", linewidth=:1.0)
             display(p1)
         end
     end
