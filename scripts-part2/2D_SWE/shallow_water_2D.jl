@@ -104,7 +104,7 @@ As parameters, we can modify:
     A_eff = (3 * 2) / 1e9 * nx * sizeof(Float64)  # Effective main memory access per iteration [GB]
     t_it = t_toc / niter                      # Execution time per iteration [s]
     T_eff = A_eff / t_it                       # Effective memory throughput [GB/s]
-    @printf("Time = %1.3f sec, T_eff = %1.4f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
+    printf("Time = %1.3f sec, T_eff = %1.4f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
     return H
 end
 
