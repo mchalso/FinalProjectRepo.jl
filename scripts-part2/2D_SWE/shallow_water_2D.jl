@@ -40,7 +40,7 @@ As parameters, we can modify:
     # Initial Conditions
     H = zeros(Float64, nx, ny) .+ H_min
     if (dam_x)
-        H[1:round(Int64(nx / 2)), :] = @zeros(round(Int64(nx / 2)), ny) .+ H_init #1D dam break in x-direction
+        H[1:round(Int64(nx / 2)), :] = zeros(round(Int64(nx / 2)), ny) .+ H_init #1D dam break in x-direction
     else
         H[:, 1:round(Int64(ny / 2))] = zeros(Float64, nx, round(Int64(ny / 2))) .+ H_init #1D dam break in y direction
     end
