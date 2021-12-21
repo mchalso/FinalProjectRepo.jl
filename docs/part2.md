@@ -81,6 +81,11 @@ In this section, we discuss the results obtained for our implementation.
 | Animation of the 2D shallow water equations being solved with a 1D dam break in y-direction. Each frame corresponds to one physical time-step. |
 |:--:|
 
+![2D SWE 1D x-dir dam break with sloping bed](../plots/part-2/SWE_dam_break_sloping_bed.gif)
+
+| Animation of the 2D shallow water equations being solved with a 1D dam break in x-direction. The bed slopes from high elevation to low elevation in the direction of the initial dam break wave. |
+|:--:|
+
 TODO: comment on visualization
 
 ### Performance
