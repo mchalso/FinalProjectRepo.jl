@@ -152,7 +152,7 @@ Copy boundary conditions in x dimension of array `A`.
 end
 
 """
-	shallow_water_2D_xpu(; nx, ny, dam1D_x, do_visu)
+	shallow_water_2D_xpu(; nx, ny, dam1D_x=true, do_visu=false, init_MPI=true)
 
 2D shallow water equations solver for an instantaneous dam break.
 The Lax-Friedrichs Method was applied to the continuity equation.
@@ -167,6 +167,7 @@ As parameters, we can modify:
     - `dam1D_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. dam2D needs to be false to activate 1D dam break. 
     - `dam2D`: if true, 2D dam break
     - `do_visu`: if true, each physical time step will be ploted.
+    - `init_MPI`: if true then init MPI, else don't init MPI.
 """
 @views function shallow_water_2D_xpu(;
     # Numerics
@@ -176,7 +177,9 @@ As parameters, we can modify:
     dam1D_x = true,
     dam2D = false,
     # Visualisation
-    do_visu = false
+    do_visu = false,
+    # MPI
+    init_MPI = true
 )
     # Physics
     Lx, Ly = 40.0, 20.0
@@ -187,7 +190,7 @@ As parameters, we can modify:
     nout = 100
     H_min = 1.0
     # Derived numerics
-    me, dims = init_global_grid(nx, ny, 1)  # Initialization of MPI and more...
+    me, dims = init_global_grid(nx, ny, 1, init_MPI=init_MPI)  # Initialization of MPI and more...
     @static if USE_GPU
         select_device()
     end  # select one GPU per MPI local rank (if >1 GPU per node)
