@@ -43,7 +43,13 @@ f(u) and g(u) are flux functions of u, artificial dissipation is applied to the 
 
 ![equation-LFM-G](http://www.sciweavers.org/download/Tex2Img_1640043405.jpg)  
 
-and are used to solved for the next iteration of the solution matrix U:  
+where λ<sub>x</sub> and λ<sub>y</sub> are signal speeds in the x and y directions. λ<sub>x</sub> and λ<sub>y</sub> are functions of the adapting dt, and are calculated as:
+
+![equation-lambdax](http://www.sciweavers.org/download/Tex2Img_1640044755.jpg)
+
+![equation-lambday](http://www.sciweavers.org/download/Tex2Img_1640044800.jpg)
+
+The "corrected" flux functions F(u) and G(u) are then used to solved for the next iteration of the solution matrix U:  
 
 ![equation-LFM-U](http://www.sciweavers.org/download/Tex2Img_1640043968.jpg)  
 
