@@ -287,9 +287,11 @@ As parameters, we can modify:
     T_eff = A_eff / t_it                       # Effective memory throughput [GB/s]
     if (me == 0)
         @printf(
-            "Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n",
+            "Time = %1.3f sec, T_eff = %1.3f GB/s, Center %s = %1.6f m (niter = %d)\n",
             t_toc,
             round(T_eff, sigdigits = 3),
+            (round(Int64(nx / 2)), round(Int64(ny / 2))),
+            H[round(Int64(nx / 2)), round(Int64(ny / 2))],
             niter
         )
     end
@@ -308,6 +310,7 @@ As parameters, we can modify:
     return Array(H), xc
 end
 
-# shallow_water_2D_xpu(; nx = 128, ny = 128, dam2D = true, do_visu = true)
+# nx = 2^11
+# shallow_water_2D_xpu(; nx = nx, ny = nx, dam2D = false, dam1D_x = true, do_visu = false)
 
 
