@@ -66,19 +66,19 @@ In this section, we discuss the results obtained for our implementation.
 
 ### 2D shallow water
 
-![2D SWE with 2D dam break](../plots/part-2/shallow_water_2D_xpu_2D-dam.gif)
-
-| Animation of the 2D shallow water equations being solved with a 2D dam break. Each frame corresponds to one physical time-step. |
-|:--:|
-
-![2D SWE 1D x-dir dam break](../plots/part-2/shallow_water_2D_xpu_1D-dam-x.gif)
+![2D SWE 1D x-dir dam break](../plots/part-2/shallow_water_2D_xpu_mpi_1D-dam-x.gif)
 
 | Animation of the 2D shallow water equations being solved with a 1D dam break in x-direction. Each frame corresponds to one physical time-step. |
 |:--:|
 
-![2D SWE 1D y-dir dam break](../plots/part-2/shallow_water_2D_xpu_1D-dam-y.gif)
+![2D SWE 1D y-dir dam break](../plots/part-2/shallow_water_2D_xpu_mpi_1D-dam-y.gif)
 
 | Animation of the 2D shallow water equations being solved with a 1D dam break in y-direction. Each frame corresponds to one physical time-step. |
+|:--:|
+
+![2D SWE with 2D dam break](../plots/part-2/shallow_water_2D_xpu_mpi_2D-dam.gif)
+
+| Animation of the 2D shallow water equations being solved with a 2D dam break. Each frame corresponds to one physical time-step. We observe that the maximum water height of the waves after the dam break is much higher than for the above 1D dam breaks.   |
 |:--:|
 
 ![2D SWE 1D x-dir dam break with sloping bed](../plots/part-2/SWE_dam_break_sloping_bed.gif)
@@ -86,7 +86,6 @@ In this section, we discuss the results obtained for our implementation.
 | Animation of the 2D shallow water equations being solved with a 1D dam break in x-direction. The bed slopes from high elevation to low elevation in the direction of the initial dam break wave. |
 |:--:|
 
-TODO: comment on visualization
 
 ### Performance
 
@@ -107,13 +106,11 @@ with a single Intel Core i7 running at 2.5 GHz.
 | 256             | 1.01            | 31.062  |
 | 512             | 0.979            | 128.367  |
 
-The Intel Core i7 has a theoretical memory bandwidth of 25.6GB/s[^4]. This means
-that we are bounded by our computations, which makes sense since single CPU
-cores are not efficient at tackling these kind of highly parallel problems
-because of their sequential nature. 
+The Intel Core i7 has a theoretical memory bandwidth of 25.6GB/s[^4]. Therefore, the algorithm is bounded 
+by the number of computations because a single CPU core does not efficiently tackle such highly parallel 
+problems because of its sequential nature. 
 
-We also conduct the same experiment on the GTX TITAN X, yielding the following
-results:
+We also conduct the same experiment on the GTX TITAN X, yielding the following results:
 
 | Domain size     | Throughput (GB/s) | Time (s) |
 | --------------- | ---------------   | -------- |
@@ -127,13 +124,11 @@ results:
 | 4096x4096		| 17.10		 | 470.429 |
 | 8192x8192		| 17.10		 | 1882.127|
 
-The TITAN X has a theoretical maximum memory bandwidth of 336.6GB/s[^5]. Since our results are an order of magnitude lower than this theoretical maximum, it is clear that our performance is also compute bounded. This makes sense since our algorithm has some parts which are not optimally paralellisable (lot of control statements inside kernel) and since this model of GPU is fairly outdated, and back in the day the gap between memory and compute performances was not as big.
+The TITAN X has a theoretical maximum memory bandwidth of 336.6GB/s[^5]. Since our results are an order of magnitude lower than this theoretical maximum, it is clear that our performance is also compute bounded. The three reasons are:  first, our algorithm has some parts which are not optimally parallelizable - it has several control statements inside the kernel. Second, it has a pretty high number of computations per memory access. Last, since this model of GPU is somewhat outdated, and back in the day the gap between memory and compute performances was not as big.
 
 #### Weak scaling
 
-Having found the optimal local problem size for the GTX TITAN X in the previous
-section (4096), we now run the same problem in 1, 2 and 4 GPUs in order to
-compare the total throughput achieved.
+Having found the optimal local problem size for the GTX TITAN X in the previous section (4096), we now run the same problem in 1, 2, and 4 GPUs to compare the total throughput achieved.
 
 | Number of GPUs | Domain size | Throughput (GB/s) | Time (s) |
 | -----------    | ----------  | ----------------  | -------- |
@@ -146,18 +141,18 @@ In order to get these results, we used the command:
 ```bash
 ~/.julia/bin/mpiexecjl -n nproc julia --project scripts-part2/2D_SWE/shallow_water_2D_LF_xpu_mpi.jl
 ```
-The script is called with (n is the grid size):
+The script is called with the following arguments (n being the grid size):
 ```julia
-shallow_water_2D_xpu(; nx = n, ny = n, dam2D = false, dam1D_x = true, do_visu = false)
+shallow_water_2D_xpu_mpi(; nx = n, ny = n, dam2D = false, dam1D_x = true, do_visu = false)
 ```
 
 #### Work-precision diagrams
 
-We now perform an evaluation of the algorithm convergence given a certain grid
-refinement. Ideally, the more density of points we have the more our results
-will imitate reality. To validate this, we are going to check the value at the
-center of the domain given different grid sizes. We expect to observe that the
-value converges as we increase the grid size.
+We now evaluate the algorithm convergence given a certain grid
+refinement. Ideally, the more density of points, the more our results
+will imitate reality. To validate this we check the value at the
+center of the domain for different grid sizes. We expect to observe that the
+value converges as we increase the grid size. The values are measured at the end of the computation.
 
 We can see our results in the following table. 
 
@@ -178,9 +173,11 @@ And the following plot shows it graphically.
 
 ## Discussion
 
+In this part 2 of the final project, we have implemented a multi-xpu 2D shallow water equations solver. We can run this solver either on one or multiple machines using a GPU or CPU without changing the implementation. We have tested our xpu implementation against the reference of the baseline unoptimized `shallow_water_2D` implementation for dam breaks in x-direction and y-direction. To evaluate the performance of the algorithm, we used an older Intel i7 laptop processor as CPU and the Octopus supercomputer (with up to 4 GtX TITAN X) as GPU. In both cases, we concluded that we are compute-bounded. The two main reasons were the complexity of the kernel computation and the outdated GPU and CPU processors, which have a smaller gap between the arithmetic and memory performance.
 
+For the performance testing of the multi-xpu implementation, we first performed strong scaling on one processor to obtain the optimum problem size for our hardware (GPU). Then we proceeded to execute the same problem size on more processors making use of `ImplicitGlobalGrid` and its `MPI` functionality for weak scaling. The throughput we measured increased for 2 GPUs instead of one but did not increase with more processors and remained at the same level for 4 GPUs. A likely explanation is the growing synchronization overhead (MPI messages) with more processors and that we need to update the halo for three arrays at each timestep.
 
-TODO: Why work precision scaling doesn't converge.
+We conclude this part by the work-precision analysis which we plotted. The computed middle of the domain in final solution changes as we change the domain resolution. This value does not converge with more resolution, but it jumps inside a narrow band above and below 3.0. This is not because the algorithm is instable, but because the time step changes with each iteration, and since we measure at the end based on total iterations, the model time won't be consistent with different resolutions. 
 
 ## References
 <!-- ## References -->

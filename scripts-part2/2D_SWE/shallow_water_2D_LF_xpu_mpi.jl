@@ -254,7 +254,6 @@ H must be set throughout the domain, to avoid numerical instability.
         @parallel compute_H!(H_new, H, u, v, dt_dx, dt_dy, size_H1_2, λx_2, λy_2)
         #Lax-Friedrichs for Momentum in x-direction
         @parallel compute_u!(u_new, u, H_new, H, dt_dx, dt_dy, size_H1_2, g)
-
         #Lax-Friedrichs for Momentum in y-direction
         @parallel compute_v!(v_new, v, H_new, H, u, dt_dx, dt_dy, size_H2_2, g)
 
@@ -265,6 +264,7 @@ H must be set throughout the domain, to avoid numerical instability.
         v_new[:, 1] .= 0
         v_new[:, end] .= 0
 
+        # pointer swap
         H .= H_new
         u .= u_new
         v .= v_new
@@ -306,7 +306,7 @@ H must be set throughout the domain, to avoid numerical instability.
         elseif (!dam1D_x && !dam2D)
             gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_1D-dam-y.gif", fps = 5)
         else 
-            gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_2D-dam.gif", fps = 5) 
+            gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_2D-dam.gif", fps = 15) 
         end
     end
     # Retrieve the global domain
@@ -315,6 +315,6 @@ H must be set throughout the domain, to avoid numerical instability.
     return Array(H), xc
 end
 
-# shallow_water_2D_xpu_mpi(; dam2D = false, dam1D_x = true, do_visu = false)
+# shallow_water_2D_xpu_mpi(; nx=256, ny=256, dam2D = false, dam1D_x = false, do_visu = true)
 
 
