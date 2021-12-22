@@ -19,10 +19,10 @@ The purpose of this shallow water equations solver is to model an instantaneous 
 ## Methods
 
 ### Spatial discretization
-The model domain was spatially discretized into a structured mesh of square-shaped elements. All elements are the same size, and spacing between elements is the same in both x and y directions (dx = dy).
+The model domain was spatially discretized with a structured mesh of square-shaped elements. All elements are the same size, and spacing between elements is the same in both x and y directions (dx = dy).
 
 ### Temporal discretization
-The temporal discretization is adapated throughout the simulation based on the CFL condition. The time step (dt) must be small enough so that information cannot travel greater than the distance between computational elements (dx).  dt is adjusted at the beginning of each time step, based on the maximum velocity in the system, and incorporating the standard factor of 4.1 to ensure stability in 2D modeling. The calculation of dt is shown here:  
+The temporal discretization is adapated throughout the simulation based on the CFL condition. The time step (dt) must be small enough so that information cannot travel greater than the distance between computational elements (dx) within one time step.  dt is adjusted at the beginning of each time step, based on the maximum velocity in the system, and incorporating the standard factor of 4.1 to ensure stability in 2D modeling. The calculation of dt is shown here:  
 
 ![equation-dt](http://www.sciweavers.org/download/Tex2Img_1640039918.jpg)
 
@@ -31,7 +31,7 @@ The 2D shallow water equations were solved by utilizing the Lax-Friedrichs Metho
 
 ![equation-LFM-basic](http://www.sciweavers.org/download/Tex2Img_1640042032.jpg)
 
-f(u) and g(u) are flux functions of u, artificial dissipation is applied to the flux functions in order to mitigate numerical instabilities. "Corrected" flux functions F(u) and G(u) are solved for at cell edges:  
+where f(u) and g(u) are flux functions of u, artificial dissipation is applied to the flux functions in order to mitigate numerical instabilities. "Corrected" flux functions F(u) and G(u) are solved for at cell edges:  
 
 ![equation-LFM-F](http://www.sciweavers.org/download/Tex2Img_1640043308.jpg)  
 
@@ -69,7 +69,7 @@ In this section, we discuss the results obtained for our implementation.
 
 ![2D SWE with 2D dam break](../plots/part-2/SWE_dam_break_2D.gif)
 
-| Animation of the 2D shallow water equations being solved with a 2D dam break. Each frame corresponds to one physical time-step. We observe that the maximum water height of the waves after the dam break is much higher than for the above 1D dam breaks.   |
+| Animation of the 2D shallow water equations being solved with a 2D dam break. Two dam break waves form, one moving in each spatial direction.   |
 |:--:|
 
 ![2D SWE 1D x-dir dam break with sloping bed](../plots/part-2/SWE_dam_break_sloping_bed.gif)
@@ -139,10 +139,10 @@ shallow_water_2D_xpu_mpi(; nx = n, ny = n, dam2D = false, dam1D_x = true, do_vis
 #### Work-precision diagrams
 
 We now evaluate the algorithm convergence given a certain grid
-refinement. Ideally, the more density of points, the more our results
-will imitate reality. To validate this we check the calculated water level at the
-center of the domain at a consistent time in the simulation, for different grid sizes. We expect to observe that the
-value converges as we increase the grid size.
+refinement. Ideally, as the density of computational nodes increases, the computed results
+will more correctly imitate reality. To validate this, we check the calculated water level at the
+center of the domain at a specific time in the simulation, for a range of computational grid sizes. It is expected that the calculated
+value converges as we increase the number of grid points. The results of this investigation are analyzed in the Discussion section.
 
 We can see our results in the following table. 
 
