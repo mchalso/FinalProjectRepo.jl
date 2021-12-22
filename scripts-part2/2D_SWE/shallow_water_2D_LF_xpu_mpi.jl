@@ -315,7 +315,6 @@ H must be set throughout the domain, to avoid numerical instability.
     return Array(H), xc
 end
 
-# nx = 2^11
-# shallow_water_2D_xpu_mpi(; nx = nx, ny = nx, dam2D = false, dam1D_x = true, do_visu = false)
+# shallow_water_2D_xpu_mpi(; dam2D = false, dam1D_x = true, do_visu = false)
 
 

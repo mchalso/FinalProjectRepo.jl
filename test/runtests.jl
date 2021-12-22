@@ -3,7 +3,6 @@ using Test, ReferenceTests, BSON
 
 printstyled("Testing Part 1 of FinalProjectRepo.jl\n"; bold = true, color = :white)
 include("part1.jl")
-# run(`julia -O3 --startup-file=no --check-bounds=no "./part1.jl"`)
 
 # Run tests for part 2 in save testing environment and the tests are split into different files because of MPI initialisation.
 function runtests()
