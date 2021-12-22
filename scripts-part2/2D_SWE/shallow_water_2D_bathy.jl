@@ -3,13 +3,17 @@ using Plots
 """
 	shallow_water_2D_bathy(; nx, ny, dam_x=true, do_visu=true)
 
-2D shallow water equations solver for an instantaneous dam break.
-The Lax-Friedrichs Method was applied to the continuity equation.
-Geometry (length of 40 meters, width of 20 meters) and initial conditions 
-(half of domain has initial water level of 5 meters, other half is dry) 
-matches BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel."
+2D shallow water equations solver for an instantaneous dam break, incorporating 
+bathymetry. Previous versions of this model could only utilize a constant bed elevation.
+The calculations are now updated to include the effect of a non-constant bed elevation. 
+In this test case for a dam break in the x-direction, the bed slopes from an elevation of
+2.5 meters to -2.5 meters. The model domain has a length of 40 meters and width of 20 meters.  
+Half of the domain has an initial water level of 5 meters, while the other half begins dry.
+The effect of bathymetry is incorporated into the momentum calculations, 
+as well as in the Lax-Friedrichs correction to the continuity equation.
 Solution of momentum equations requires division by H. Therefore a minimum
 H must be set throughout the domain, to avoid numerical instability.
+
 
 # Arguments
     - `nx`: number of discretised cells for x dimension.
