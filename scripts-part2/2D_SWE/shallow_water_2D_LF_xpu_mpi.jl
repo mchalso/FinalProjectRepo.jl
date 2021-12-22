@@ -152,7 +152,7 @@ Copy boundary conditions in x dimension of array `A`.
 end
 
 """
-	shallow_water_2D_xpu(; nx, ny, dam1D_x=true, do_visu=false, init_MPI=true)
+	shallow_water_2D_xpu_mpi(; nx, ny, dam1D_x=true, dam2D=false, do_visu=false)
 
 2D shallow water equations solver for an instantaneous dam break.
 The Lax-Friedrichs Method was applied to the continuity equation.
@@ -161,15 +161,19 @@ Geometry (length of 40 meters, width of 20 meters) and initial conditions
 matches BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel."
 Solution of momentum equations requires division by H. Therefore a minimum
 H must be set throughout the domain, to avoid numerical instability.
-As parameters, we can modify:
+
+# Arguments
     - `nx`: number of discretised cells for x dimension.
     - `ny`: number of discretised cells for y dimension.
     - `dam1D_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. dam2D needs to be false to activate 1D dam break. 
     - `dam2D`: if true, 2D dam break
     - `do_visu`: if true, each physical time step will be ploted.
-    - `init_MPI`: if true then init MPI, else don't init MPI.
+
+# Return values
+    - `H`: The solution arrray (Water surface height in m).
+    - `xc`: The x-coord vector.
 """
-@views function shallow_water_2D_xpu(;
+@views function shallow_water_2D_xpu_mpi(;
     # Numerics
     nx = 512,
     ny = 256,
@@ -178,8 +182,6 @@ As parameters, we can modify:
     dam2D = false,
     # Visualisation
     do_visu = false,
-    # MPI
-    init_MPI = true
 )
     # Physics
     Lx, Ly = 40.0, 20.0
@@ -190,7 +192,7 @@ As parameters, we can modify:
     nout = 100
     H_min = 1.0
     # Derived numerics
-    me, dims = init_global_grid(nx, ny, 1, init_MPI=init_MPI)  # Initialization of MPI and more...
+    me, dims = init_global_grid(nx, ny, 1)  # Initialization of MPI and more
     @static if USE_GPU
         select_device()
     end  # select one GPU per MPI local rank (if >1 GPU per node)
@@ -300,11 +302,11 @@ As parameters, we can modify:
     end
     if (do_visu && me == 0)
         if (dam1D_x && !dam2D)
-            gif(anim, "plots/part-2/shallow_water_2D_xpu_1D-dam-x.gif", fps = 5)
+            gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_1D-dam-x.gif", fps = 5)
         elseif (!dam1D_x && !dam2D)
-            gif(anim, "plots/part-2/shallow_water_2D_xpu_1D-dam-y.gif", fps = 5)
+            gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_1D-dam-y.gif", fps = 5)
         else 
-            gif(anim, "plots/part-2/shallow_water_2D_xpu_2D-dam.gif", fps = 5) 
+            gif(anim, "plots/part-2/shallow_water_2D_xpu_mpi_2D-dam.gif", fps = 5) 
         end
     end
     # Retrieve the global domain
@@ -314,6 +316,6 @@ As parameters, we can modify:
 end
 
 # nx = 2^11
-# shallow_water_2D_xpu(; nx = nx, ny = nx, dam2D = false, dam1D_x = true, do_visu = false)
+# shallow_water_2D_xpu_mpi(; nx = nx, ny = nx, dam2D = false, dam1D_x = true, do_visu = false)
 
 

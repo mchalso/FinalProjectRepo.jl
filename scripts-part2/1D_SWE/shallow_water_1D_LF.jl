@@ -1,4 +1,4 @@
-using Plots
+using Plots, Printf
 
 """
     shallow_water_1D(;do_visu=false)
@@ -8,8 +8,12 @@ The Lax-Friedrichs Method was applied to the continuity equation.
 Geometry (length of 40 meters) and initial conditions (half of domain 
 have initial water level of 5 meters, other half is dry) match 
 BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
-As parameters, we can modify:
+
+# Arguments
     - `do_visu`: if true, each physical time step will be ploted.
+
+# Return values
+    - `H`: The solution arrray (Water surface height in m).
 """
 @views function shallow_water_1D(;do_visu=false)
     # Physics

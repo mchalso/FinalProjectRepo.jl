@@ -1,4 +1,4 @@
-using Plots
+using Plots, Printf
 
 """
 	shallow_water_2D(; nx, ny, dam_x=true, do_visu=true)
@@ -10,11 +10,15 @@ Geometry (length of 40 meters, width of 20 meters) and initial conditions
 matches BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel."
 Solution of momentum equations requires division by H. Therefore a minimum
 H must be set throughout the domain, to avoid numerical instability.
-As parameters, we can modify:
+
+# Arguments
     - `nx`: number of discretised cells for x dimension.
     - `ny`: number of discretised cells for y dimension.
     - `dam_x`: if true, 1D dam break in x-direction, else 1D dam break in y-direction. 
     - `do_visu`: if true, each physical time step will be ploted.
+
+# Return values
+    - `H`: The solution arrray (Water surface height in m).
 """
 @views function shallow_water_2D(;
     # Numerics
@@ -104,7 +108,7 @@ As parameters, we can modify:
     A_eff = (3 * 2) / 1e9 * nx * sizeof(Float64)  # Effective main memory access per iteration [GB]
     t_it = t_toc / niter                      # Execution time per iteration [s]
     T_eff = A_eff / t_it                       # Effective memory throughput [GB/s]
-    printf("Time = %1.3f sec, T_eff = %1.4f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
+    @printf("Time = %1.3f sec, T_eff = %1.4f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
     return H
 end
 
