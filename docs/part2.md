@@ -150,26 +150,27 @@ shallow_water_2D_xpu_mpi(; nx = n, ny = n, dam2D = false, dam1D_x = true, do_vis
 
 We now evaluate the algorithm convergence given a certain grid
 refinement. Ideally, the more density of points, the more our results
-will imitate reality. To validate this we check the value at the
-center of the domain for different grid sizes. We expect to observe that the
-value converges as we increase the grid size. The values are measured at the end of the computation.
+will imitate reality. To validate this we check the calculated water level at the
+center of the domain at a consistent time in the simulation, for different grid sizes. We expect to observe that the
+value converges as we increase the grid size.
 
 We can see our results in the following table. 
 
 | Size | H[nx/2, ny/2] m |
 |------|------------------|
-| 16   | 2.968512          |
-| 32   | 2.980016          |
-| 64   | 2.989295          |
-| 128  | 2.987390          |
-| 256  | 3.029586          |
-| 512  | 3.216812          |
-| 1024 | 2.854171		|
-| 2048 | 3.390651		|
-
+| 16   | 3.000          |
+| 32   | 3.001          |
+| 64   | 3.017          |
+| 128  | 3.071          |
+| 256  | 2.968          |
+| 512  | 2.703          |
+| 1024 | 2.564		|
+| 2048 | 2.539		|
+| 4096 | 2.540		|
+ 
 And the following plot shows it graphically.
 
-![work precission](../plots/part-2/precision_scaling_2D.png) 
+![work precision](../plots/part-2/work_precision_scaling.png) 
 
 ## Discussion
 
@@ -177,7 +178,7 @@ In this part 2 of the final project, we have implemented a multi-xpu 2D shallow 
 
 For the performance testing of the multi-xpu implementation, we first performed strong scaling on one processor to obtain the optimum problem size for our hardware (GPU). Then we proceeded to execute the same problem size on more processors making use of `ImplicitGlobalGrid` and its `MPI` functionality for weak scaling. The throughput we measured increased for 2 GPUs instead of one but did not increase with more processors and remained at the same level for 4 GPUs. A likely explanation is the growing synchronization overhead (MPI messages) with more processors and that we need to update the halo for three arrays at each timestep.
 
-We conclude this part by the work-precision analysis which we plotted. The computed middle of the domain in final solution changes as we change the domain resolution. This value does not converge with more resolution, but it jumps inside a narrow band above and below 3.0. This is not because the algorithm is instable, but because the time step changes with each iteration, and since we measure at the end based on total iterations, the model time won't be consistent with different resolutions. 
+We conclude this part by the work-precision analysis, which is plotted above. The computed water surface elevation at the middle of the domain changes as we change the spatial resolution of the domain. At low resolution (nx=ny < 300), the computed water surface elevation at the center of the model domain at the measured time fluctuates around 3.0 meters. But with increased resolution (nx=ny > 1000), the computed value approaches convergence between 2.5 and 2.6 meters. For very high resolution (nx=ny > 2000), the computed result at the center of the model domain changes by less than 0.001, and the value converges to approximately 2.54 meters.
 
 ## References
 <!-- ## References -->
