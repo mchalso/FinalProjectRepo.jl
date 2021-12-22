@@ -66,8 +66,9 @@ end
     diffusion_3D(; ttot, n, nout, do_visu=false)
 
 Creates the 3D steady-state diffusion problem and solves, using a dual-time
-approach. All the physics and numerics are defined in this function. As
-parameters, we can modify:
+approach. All the physics and numerics are defined in this function. 
+
+# Arguments
     - `ttot`: the total physical time.
     - `n`: the number of discretised cells per dimension.
     - `nout`: the number of virtual time iterations before we check the residual.
@@ -75,6 +76,9 @@ parameters, we can modify:
         an image. In order to produce a video from those images (stored in
         `plots/part-1`), please execute the script `create_anim.sh` located in
         the same folder.
+# Return values
+    - `H`: The solution arrray (Water surface height in m).
+    - `xc`: The x-coord vector.
 """
 @views function diffusion_3D(;
         # Physics
