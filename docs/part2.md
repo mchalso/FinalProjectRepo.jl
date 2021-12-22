@@ -3,7 +3,7 @@
 Solution of the shallow water equations in one and two dimensions. The equations are solved using Julia on multi-GPUs.
 
 ## Intro
-The shallow water equations are a set of hyperbolic partial differential equations (PDEs) for describing shallow fluid flows. The shallow water equations are derived from depth-integration of the Navier-Stokes Equations, which describe continuity of mass and continuity of momentum of fluids. The shallow water equations assume a hydrostatic pressure distribution and constant velocity throughout fluid depth, along with the condition that horizontal length scale is significantly larger than than the vertical scale. The 2D shallow water equations include equations for conservation of mass, conservation of momentum in the x-direction, and conservation of momentum in the y-direction. The equations are shown here in conservative form for a horizontal bed, neglecting friction and viscous forces:
+The shallow water equations are a set of hyperbolic partial differential equations (PDEs) for describing shallow fluid flows. The shallow water equations are derived from depth-integration of the Navier-Stokes Equations, which describe continuity of mass and continuity of momentum for fluids. The shallow water equations assume a hydrostatic pressure distribution and constant velocity throughout fluid depth, along with the condition that horizontal length scale is significantly larger than than the vertical scale. The 2D shallow water equations include equations for conservation of mass, conservation of momentum in the x-direction, and conservation of momentum in the y-direction. The equations are shown here in conservative form for a horizontal bed, neglecting friction and viscous forces:
 
 ### Conservation of mass
 ![equation-2DSWE-continuity](http://www.sciweavers.org/download/Tex2Img_1640034852.jpg)
@@ -25,10 +25,10 @@ The purpose of this shallow water equations solver is to model an instantaneous 
 ## Methods
 
 ### Spatial discretization
-The model domain was spatially discretized into square-shaped (dx = dy) elements, with edge lengths of approximately 0.08 meters. There are 512 elements in the x-direction, and 256 elements in the y-direction. The model was initially tested with smaller sized elements, and then elements were coarsened to the maximum size at which accuracy was acceptable, in order to reduce computational cost.
+The model domain was spatially discretized into a structured mesh of square-shaped elements. All elements are the same size, and spacing between elements is the same in both x and y directions (dx = dy).
 
 ### Temporal discretization
-The temporal discretization (dt) is adapated throughout the simulation based on the CFL condition. The timestep must be small enough so that information cannot travel greater than the distance between computational elements (dx), with additional reduction to ensure convergence in 2D modeling. The dt is adjusted at the beginning of each time step, based on the maximum velocity in the system. The calculation of dt is shown here:  
+The temporal discretization is adapated throughout the simulation based on the CFL condition. The time step (dt) must be small enough so that information cannot travel greater than the distance between computational elements (dx).  dt is adjusted at the beginning of each time step, based on the maximum velocity in the system, and incorporating the standard factor of 4.1 to ensure stability in 2D modeling. The calculation of dt is shown here:  
 
 ![equation-dt](http://www.sciweavers.org/download/Tex2Img_1640039918.jpg)
 
@@ -43,7 +43,7 @@ f(u) and g(u) are flux functions of u, artificial dissipation is applied to the 
 
 ![equation-LFM-G](http://www.sciweavers.org/download/Tex2Img_1640043405.jpg)  
 
-where λ<sub>x</sub> and λ<sub>y</sub> are signal speeds in the x and y directions. λ<sub>x</sub> and λ<sub>y</sub> are functions of the adapting dt, and are calculated as:
+where the subscripts i and j refer to positions in space, and the superscript n refers to the time step. λ<sub>x</sub> and λ<sub>y</sub> are signal speeds in the x and y directions, and are functions of the adapting time step. The calculations of λ<sub>x</sub> and λ<sub>y</sub> are shown here:
 
 ![equation-lambdax](http://www.sciweavers.org/download/Tex2Img_1640044755.jpg)
 
