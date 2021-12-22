@@ -41,7 +41,7 @@ problem as explained in lecture 4:
 - We then move every element to the right and introduce the pseudo-time
 integration:
 
-![equation-pseudo](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%5Ctau%7D%20%3D%20-%5Cfrac%7B%5Cpartial%20H%7D%7B%5Cpartial%20t%7D%20%2B%20D%20%5Cnabla%5E2%20H&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+![equation-pseudo](https://i.imgur.com/atznX7N.png)
 
 - For each 'real' timestep, we loop with respect to the 'virtual' time until the
 equation's residual (`R_H`) is below a chosen threshold.
