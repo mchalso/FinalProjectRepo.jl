@@ -39,7 +39,7 @@ process.
 end
 
 """
-    shallow_water_1D_xpu(;do_visu=false)
+    shallow_water_1D_xpu(;nx=1024, do_visu=false)
 
 1D shallow water equations solver for an instantaneous dam break.
 The Lax-Friedrichs Method was applied to the continuity equation.
@@ -48,19 +48,23 @@ have initial water level of 5 meters, other half is dry) match
 BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
 
 # Arguments
+    - `nx`: number of discretised cells.
     - `do_visu`: if true, each physical time step will be ploted.
 
 # Return values
     - `H`: The solution arrray (Water surface height in m).
 """
-@views function shallow_water_1D_xpu(; do_visu = false)
+@views function shallow_water_1D_xpu(;
+    # Numerics
+    nx = 1024,
+    # Visualisation
+    do_visu = false)
     # Physics
     Lx = 40.0
     g = 9.81
     u_max = 6 #from review of results with very small timesteps
     ttot = 20.0
     # Numerics
-    nx = 1024
     nout = 100
     # Derived numerics
     dx = Lx / nx
@@ -78,13 +82,15 @@ BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
     u2 = copy(u)
     size_H1_2, size_u1_2 = size(H, 1) - 2, size(u, 1) - 2
     # Preparation of visualisation
-    ENV["GKSwstype"] = "nul"
-    if isdir("plots/part-2/temp") == false
-        mkdir("plots/part-2/temp")
+    if do_visu
+        ENV["GKSwstype"] = "nul"
+        if isdir("plots/part-2/temp") == false
+            mkdir("plots/part-2/temp")
+        end
+        loadpath = "./plots/part-2/temp/"
+        anim = Animation(loadpath, String[])
+        println("Animation directory: $(anim.dir)")
     end
-    loadpath = "./plots/part-2/temp/"
-    anim = Animation(loadpath, String[])
-    println("Animation directory: $(anim.dir)")
     t_tic = 0.0
     niter = 0
     # Time loop
@@ -109,7 +115,8 @@ BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
                 xlabel = "Lx (m)", ylabel = "water surface elevation (m)", label = "h",
                 title = "time = $(round(it*dt, sigdigits=3)) s, stability: $(round(maximum(abs.(u))*dt/dx,sigdigits=3)) /1",
                 linewidth = :1.0, framestyle = :box)
-            plot!(xc, u, label = "u", linewidth = :1.0); frame(anim)
+            plot!(xc, u, label = "u", linewidth = :1.0)
+            frame(anim)
         end
     end
     t_toc = Base.time() - t_tic
@@ -117,7 +124,9 @@ BASEMENT version 2.8 Test Case H_1 "Dam break in a closed channel
     t_it = t_toc / niter                      # Execution time per iteration [s]
     T_eff = A_eff / t_it                       # Effective memory throughput [GB/s]
     @printf("Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits = 3), niter)
-    gif(anim, "plots/part-2/shallow_water_1D_LF.gif", fps = 15)
+    if do_visu
+        gif(anim, "plots/part-2/shallow_water_1D_LF.gif", fps = 15)
+    end
     return Array(H)
 end
 

@@ -1,5 +1,6 @@
-include("../scripts-part1/part1.jl")
+include("./shared.jl")
 
+include("../scripts-part1/part1.jl")
 H, xc_g = diffusion_3D(; do_visu=false)
 
 # Reference test using ReferenceTests.jl
