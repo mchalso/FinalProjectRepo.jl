@@ -1,6 +1,6 @@
 
 # Part 2: 2D Shallow Water Equations Solver
-Solution of the shallow water equations in one and two dimensions. The equations are solved using Julia on multi-GPUs.
+A multi-XPU solver of the 2D shallow water equations was developed. The solver was designed for modeling of an instantaneous dam break. The solver can be implemented on either CPUs or GPUs.
 
 ## Intro
 The shallow water equations are a set of hyperbolic partial differential equations (PDEs) for describing shallow fluid flows. The shallow water equations are derived from depth-integration of the Navier-Stokes Equations, which describe continuity of mass and continuity of momentum for fluids. The shallow water equations assume a hydrostatic pressure distribution and constant velocity throughout fluid depth, along with the condition that horizontal length scale is significantly larger than than the vertical scale. The 2D shallow water equations include equations for conservation of mass, conservation of momentum in the x-direction, and conservation of momentum in the y-direction. The equations are shown here in conservative form for a horizontal bed, neglecting friction and viscous forces:
@@ -15,12 +15,6 @@ The shallow water equations are a set of hyperbolic partial differential equatio
 ![equation-2DSWE-momentumy](http://www.sciweavers.org/download/Tex2Img_1640035339.jpg)
 
 The purpose of this shallow water equations solver is to model an instantaneous dam breach. The model domain has a length of 40 meters and a width of 20 meters. Half of the domain (a 20 meter x 20 meter region) has an initial water level of 5 meters, while the other half (also a 20 meter x 20 meter region) has an initial water level of 1 meter. The model setup matches that of a test case used in the validation of the software BASEMENT version 2.8, Test Case H_1 "Dam break in a closed channel" [^1]
-
-<!-- What's all about. Brief overview about: -->
-<!-- - the process -->
-<!-- - the equations -->
-<!-- - the aims -->
-<!-- - ... -->
 
 ## Methods
 
@@ -53,12 +47,9 @@ The "corrected" flux functions F(u) and G(u) are then used to solved for the nex
 
 ![equation-LFM-U](http://www.sciweavers.org/download/Tex2Img_1640043968.jpg)  
 
+### Hardware
 
-<!--The methods to be used: -->
-<!--- spatial and temporal discretisation -->
-<!--- solution approach -->
-- hardware
-- ...
+Models were run on both CPUs and GPUs. The CPU has 4 Intel i7 1.8-GHz dual-core processors (8 total cores), with 24 GB of RAM. For GPUs, 4 Nvidia Titan X GPUs were utilized. The GPUs were accessed via the Octopus supercomputer.
 
 ## Results
 
