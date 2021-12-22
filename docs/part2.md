@@ -67,7 +67,7 @@ In this section, we discuss the results obtained for our implementation.
 | Animation of the 2D shallow water equations being solved with a 1D dam break in y-direction. Each frame corresponds to one physical time-step. |
 |:--:|
 
-![2D SWE with 2D dam break](../plots/part-2/shallow_water_2D_xpu_mpi_2D-dam.gif)
+![2D SWE with 2D dam break](../plots/part-2/SWE_dam_break_2D.gif)
 
 | Animation of the 2D shallow water equations being solved with a 2D dam break. Each frame corresponds to one physical time-step. We observe that the maximum water height of the waves after the dam break is much higher than for the above 1D dam breaks.   |
 |:--:|
