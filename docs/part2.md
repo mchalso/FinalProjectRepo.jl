@@ -49,7 +49,7 @@ The "corrected" flux functions F(u) and G(u) are then used to solved for the nex
 
 ### Hardware
 
-Models were run on both CPUs and GPUs. The CPU has 4 Intel i7 1.8-GHz dual-core processors (8 total cores), with 24 GB of RAM. For GPUs, 4 Nvidia Titan X GPUs were utilized. The GPUs were accessed via the Octopus supercomputer.
+Models were run on both CPUs and GPUs. CPUs used Intel i7 dual-core processors, running at 2.5 GHz with 24 GB of memory throughput. For GPUs, 4 Nvidia Titan X GPUs were utilized. The GPUs were accessed via the Octopus supercomputer.
 
 ## Results
 
@@ -86,8 +86,7 @@ For the performance measurements we use the 2D xpu with MPI solver of the shallo
 
 Strong-scaling on CPU and GPU -> optimal "local" problem sizes.
 
-We test the performance of the algorithm using only a single thread in a machine
-with a single Intel Core i7 running at 2.5 GHz.
+We test the performance of the algorithm using only a single thread in a machine with a single Core i7 running at 2.5 GHz.
 
 | Domain size     | Throughput (GB/s) | Time (s) |
 | --------------- | ---------------   | -------- |
