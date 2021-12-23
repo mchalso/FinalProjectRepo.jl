@@ -12,4 +12,4 @@ Steady state solution of a diffusive process for given physical time steps using
 ## Part 2
 [**Part 2**](/docs/part2.md): 2D (and 1D) multi-XPUs shallow water equations solver
 
-Shallow water equations solution for an instantaneous dam break applying the Lax-Friedrichs method for the continuity equation.
+Shallow water equations solution for an instantaneous dam break applying the Lax-Friedrichs method for stabilization of fluxes.
